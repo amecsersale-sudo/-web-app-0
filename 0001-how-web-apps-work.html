@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web App ทำงานอย่างไร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 1 · ภาพรวมก่อนลงมือ</p>
+    <h1>Web App ทำงานอย่างไร?</h1>
+    <p class="lesson-meta">ใช้เวลาอ่านประมาณ 8-10 นาที · ไม่ต้องเขียนโค้ดในบทนี้ แค่ทำความเข้าใจภาพรวมก่อน</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    ก่อนจะลงมือเขียนโค้ดบรรทัดแรก เราต้องเห็นภาพรวมก่อนว่า
+    เวลาคนในบริษัทเปิดเว็บขึ้นมา "แจ้งเหตุความปลอดภัย" หรือ "เช็กสลิปเงินเดือน"
+    เบื้องหลังมันเกิดอะไรขึ้นบ้าง — ใครทำหน้าที่อะไร ข้อมูลเดินทางไปไหน
+    และเก็บอยู่ที่ไหนตอนปิดเบราว์เซอร์ไปแล้ว
+  </p>
+
+  <p>
+    เว็บแอปทุกตัว ไม่ว่าจะเล็กหรือใหญ่แค่ไหน ประกอบด้วย <strong>3 ส่วนหลัก</strong>
+    ที่ทำงานคนละหน้าที่กัน:
+  </p>
+
+  <h2>1. Frontend — สิ่งที่คนกดเห็นในเบราว์เซอร์</h2>
+  <p>
+    คือหน้าตาเว็บที่พนักงานเห็นและโต้ตอบด้วย เช่น ฟอร์มแจ้งเหตุ ปุ่ม "ส่งข้อมูล"
+    ตารางแสดงรายชื่อพนักงาน — เขียนด้วย <strong>HTML</strong> (โครงสร้าง),
+    <strong>CSS</strong> (หน้าตา/สี/จัดวาง) และ <strong>JavaScript</strong> (การโต้ตอบ เช่น กดปุ่มแล้วเกิดอะไรขึ้น)
+    โค้ดส่วนนี้ทำงาน <em>บนเครื่องของผู้ใช้</em> ไม่ใช่บนเซิร์ฟเวอร์บริษัท
+  </p>
+
+  <h2>2. Backend — ตัวประมวลผลที่อยู่บนเซิร์ฟเวอร์</h2>
+  <p>
+    คือโปรแกรมที่รันอยู่บนเครื่องเซิร์ฟเวอร์ (ไม่ใช่เครื่องพนักงาน) ทำหน้าที่รับคำขอจาก frontend
+    เช่น "บันทึกรายงานอุบัติเหตุนี้หน่อย" ตรวจสอบสิทธิ์ว่าใครมีสิทธิ์ดูข้อมูลเงินเดือนใคร
+    คำนวณ แล้วส่งผลลัพธ์กลับไป — ในหลักสูตรนี้เราจะใช้ <strong>Node.js</strong> เขียน backend
+    เพราะใช้ภาษา JavaScript ตัวเดียวกับ frontend ได้เลย ไม่ต้องเรียนสองภาษา
+  </p>
+
+  <h2>3. Database — ที่เก็บข้อมูลถาวร</h2>
+  <p>
+    เมื่อพนักงานปิดเบราว์เซอร์ไป ข้อมูลที่กรอกไว้ต้อง <em>ไม่หายไปด้วย</em> —
+    นี่คือหน้าที่ของฐานข้อมูล ที่เก็บข้อมูลไว้ถาวรบนเซิร์ฟเวอร์ เช่น รายชื่อพนักงานทุกคน
+    ประวัติการแจ้งเหตุทั้งหมดย้อนหลัง — เฉพาะ backend เท่านั้นที่คุยกับฐานข้อมูลได้โดยตรง
+    frontend จะต้องขอผ่าน backend เสมอ (เพื่อความปลอดภัยของข้อมูล)
+  </p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 620 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="แผนภาพแสดงการทำงานระหว่าง Frontend เบราว์เซอร์ของพนักงาน, Backend เซิร์ฟเวอร์ และ Database">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+        </marker>
+      </defs>
+      <style>
+        .box { fill: var(--bg); stroke: var(--border-strong); stroke-width: 1.5; }
+        .label { font: 600 15px "IBM Plex Sans Thai", sans-serif; fill: var(--ink); }
+        .sub { font: 12px "IBM Plex Mono", monospace; fill: var(--muted); }
+        .flow { font: 600 11px "IBM Plex Mono", monospace; letter-spacing: 0.02em; fill: var(--accent-ink); }
+        .arr { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      </style>
+
+      <rect class="box" x="20" y="80" width="150" height="90" rx="10"></rect>
+      <text class="label" x="95" y="118" text-anchor="middle">Frontend</text>
+      <text class="sub" x="95" y="140" text-anchor="middle">เบราว์เซอร์พนักงาน</text>
+      <text class="sub" x="95" y="156" text-anchor="middle">HTML / CSS / JS</text>
+
+      <rect class="box" x="235" y="80" width="150" height="90" rx="10"></rect>
+      <text class="label" x="310" y="118" text-anchor="middle">Backend</text>
+      <text class="sub" x="310" y="140" text-anchor="middle">เซิร์ฟเวอร์บริษัท</text>
+      <text class="sub" x="310" y="156" text-anchor="middle">Node.js</text>
+
+      <rect class="box" x="450" y="80" width="150" height="90" rx="10"></rect>
+      <text class="label" x="525" y="118" text-anchor="middle">Database</text>
+      <text class="sub" x="525" y="140" text-anchor="middle">ข้อมูลถาวร</text>
+      <text class="sub" x="525" y="156" text-anchor="middle">พนักงาน / รายงาน</text>
+
+      <path class="arr" d="M170,105 L235,105"></path>
+      <text class="flow" x="202" y="95" text-anchor="middle">คำขอ</text>
+
+      <path class="arr" d="M235,150 L170,150"></path>
+      <text class="flow" x="202" y="170" text-anchor="middle">ผลลัพธ์</text>
+
+      <path class="arr" d="M385,105 L450,105"></path>
+      <text class="flow" x="418" y="95" text-anchor="middle">ค้นหา/บันทึก</text>
+
+      <path class="arr" d="M450,150 L385,150"></path>
+      <text class="flow" x="418" y="170" text-anchor="middle">ข้อมูล</text>
+
+      <text class="sub" x="95" y="215" text-anchor="middle">"ขอส่งรายงาน</text>
+      <text class="sub" x="95" y="230" text-anchor="middle">อุบัติเหตุนี้หน่อย"</text>
+
+      <text class="sub" x="525" y="215" text-anchor="middle">เก็บถาวร แม้</text>
+      <text class="sub" x="525" y="230" text-anchor="middle">ปิดเบราว์เซอร์แล้ว</text>
+    </svg>
+    <p class="diagram-caption">แผนภาพ 1 — เส้นทางคำขอ/คำตอบระหว่างสามส่วนของเว็บแอป</p>
+  </div>
+
+  <h2>HTTP: ภาษากลางที่ frontend คุยกับ backend</h2>
+  <p>
+    ทุกครั้งที่เบราว์เซอร์อยากได้อะไรจากเซิร์ฟเวอร์ มันจะส่ง <strong>HTTP request</strong>
+    (คำขอ) ไปตาม URL ที่กำหนด แล้วเซิร์ฟเวอร์จะตอบกลับมาเป็น <strong>HTTP response</strong>
+    (คำตอบ) — เหมือนส่งจดหมายไปถามแล้วรอคำตอบกลับมา คำขอที่ใช้บ่อยมี 2 แบบหลักๆ:
+  </p>
+  <ul>
+    <li><code>GET</code> — "ขอดูข้อมูลหน่อย" เช่น ขอดูรายชื่อพนักงานทั้งหมด (ไม่เปลี่ยนแปลงข้อมูลอะไร)</li>
+    <li><code>POST</code> — "ขอส่งข้อมูลใหม่เข้าไป" เช่น ส่งฟอร์มแจ้งเหตุความปลอดภัยที่กรอกเสร็จแล้ว</li>
+  </ul>
+
+  <h3>ตัวอย่างจริง: พนักงานแจ้งเหตุความปลอดภัย</h3>
+  <ol>
+    <li>พนักงานเปิดเว็บ → เบราว์เซอร์ส่ง <code>GET</code> request ไปที่เซิร์ฟเวอร์ → เซิร์ฟเวอร์ส่งหน้าฟอร์ม (HTML) กลับมา</li>
+    <li>พนักงานกรอกฟอร์มแล้วกด "ส่ง" → เบราว์เซอร์ส่ง <code>POST</code> request พร้อมข้อมูลที่กรอก ไปที่เซิร์ฟเวอร์</li>
+    <li>เซิร์ฟเวอร์ (backend) รับข้อมูล ตรวจสอบความถูกต้อง แล้วบันทึกลง database</li>
+    <li>เซิร์ฟเวอร์ส่ง response กลับไปว่า "บันทึกสำเร็จ" → เบราว์เซอร์แสดงข้อความแจ้งเตือนให้พนักงานเห็น</li>
+  </ol>
+  <p>
+    สังเกตว่าข้อมูลรายงานอุบัติเหตุ ถูกเก็บอยู่ใน <em>database บนเซิร์ฟเวอร์</em>
+    ไม่ใช่ในเบราว์เซอร์ของพนักงานคนนั้น — ดังนั้นหัวหน้างานคนอื่นที่เปิดเว็บเดียวกันจากเครื่องอื่น
+    ก็จะเห็นรายงานเดียวกันได้ทันที นี่คือเหตุผลที่เราต้องมีทั้ง 3 ส่วนแยกกัน
+  </p>
+
+  <div class="callout primary-source">
+    <p class="callout-title">แหล่งอ้างอิงหลัก</p>
+    <p>
+      MDN Web Docs (เอกสารทางการของ Mozilla) อธิบายเรื่องนี้แบบละเอียดและมีภาพประกอบ:
+      <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Understanding_the_web/How_the_web_works" target="_blank" rel="noopener">
+        How does the Internet work? — MDN
+      </a>
+      แนะนำให้อ่านผ่านๆ สัก 1 รอบ ก่อนไปบทเรียนถัดไป
+    </p>
+  </div>
+
+  <h2>ทดสอบความเข้าใจ</h2>
+  <div class="quiz" id="quiz">
+
+    <div class="quiz-item" data-correct="0">
+      <p class="quiz-q">1. ข้อใดคือ "Frontend" ของเว็บแอป?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">โค้ดที่ทำงานในเบราว์เซอร์ผู้ใช้</button>
+        <button class="quiz-choice">โปรแกรมที่ทำงานบนเซิร์ฟเวอร์บริษัท</button>
+        <button class="quiz-choice">ที่เก็บข้อมูลพนักงานถาวรทั้งหมด</button>
+        <button class="quiz-choice">สายเคเบิลที่เชื่อมต่ออินเทอร์เน็ตทั้งหมด</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+
+    <div class="quiz-item" data-correct="1">
+      <p class="quiz-q">2. ทำไมข้อมูลรายงานอุบัติเหตุต้องเก็บไว้ใน database บนเซิร์ฟเวอร์ ไม่ใช่ในเบราว์เซอร์?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">เพราะเบราว์เซอร์รันโค้ด JavaScript ไม่ได้เลย</button>
+        <button class="quiz-choice">เพื่อให้คนอื่นเปิดจากเครื่องอื่นเห็นข้อมูลเดียวกัน</button>
+        <button class="quiz-choice">เพราะ CSS ต้องอ่านข้อมูลจากฐานข้อมูลเสมอ</button>
+        <button class="quiz-choice">เพราะ HTTP ส่งข้อมูลได้แค่ทางเดียวเท่านั้น</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+
+    <div class="quiz-item" data-correct="1">
+      <p class="quiz-q">3. เวลาพนักงานกด "ส่งฟอร์ม" เบราว์เซอร์จะส่ง HTTP request แบบไหนไปหาเซิร์ฟเวอร์?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">GET เพราะเป็นการขอดูข้อมูลอย่างเดียว</button>
+        <button class="quiz-choice">POST เพราะเป็นการส่งข้อมูลใหม่เข้าไปเก็บ</button>
+        <button class="quiz-choice">CSS เพราะต้องจัดหน้าตาฟอร์มก่อนส่ง</button>
+        <button class="quiz-choice">SQL เพราะเบราว์เซอร์คุยกับฐานข้อมูลตรงๆ</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+
+  </div>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ถามครูได้ตลอดบทเรียน</p>
+    <p>
+      ถ้ามีศัพท์ไหนงงๆ หรืออยากให้ยกตัวอย่างจากงาน ESS จริงมากกว่านี้ (เช่น เคสเงินเดือน)
+      ถามในแชทได้เลย ไม่ต้องรอให้จบบทเรียน — Claude เป็นครูของบทเรียนนี้ ถามได้ตลอด
+    </p>
+  </div>
+
+  <h2>บทต่อไปจะเรียนอะไร</h2>
+  <p>
+    ตอนนี้เรารู้ภาพรวมแล้วว่ามี 3 ส่วน (frontend / backend / database) คุยกันด้วย HTTP
+    บทเรียนที่ 2 เราจะเริ่ม <strong>ลงมือเขียน HTML</strong> จริง —
+    สร้างหน้าฟอร์มแจ้งเหตุความปลอดภัยหน้าแรกขึ้นมาด้วยมือตัวเอง (ยังไม่ต้องมี backend)
+    เพื่อให้เห็นว่า frontend เพียวๆ หน้าตาเป็นยังไง ก่อนจะค่อยๆ ต่อกับ backend ในบทหลังๆ
+  </p>
+
+  <div class="lesson-nav">
+    <span>← (บทแรกของหลักสูตร)</span>
+    <span><a href="https://claude.ai/code/artifact/3f2a9863-4f52-446a-a191-995d7d39a130">บทเรียนที่ 2: เขียน HTML หน้าแรก →</a></span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.quiz-item').forEach(function (item) {
+      var correctIndex = parseInt(item.dataset.correct, 10);
+      var buttons = item.querySelectorAll('.quiz-choice');
+      var feedback = item.querySelector('.quiz-feedback');
+      var answered = false;
+      buttons.forEach(function (btn, i) {
+        btn.addEventListener('click', function () {
+          if (answered) return;
+          answered = true;
+          if (i === correctIndex) {
+            btn.classList.add('correct');
+            feedback.textContent = '[ถูกต้อง]';
+          } else {
+            btn.classList.add('incorrect');
+            buttons[correctIndex].classList.add('correct');
+            feedback.textContent = '[ยังไม่ถูก] คำตอบที่ถูกคือข้อที่ไฮไลต์ไว้';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

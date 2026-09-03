@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตกแต่งฟอร์มด้วย CSS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item,
+.fillblank-item + .fillblank-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Rendered form demo (lesson 2+) ---- */
+.rendered-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.rendered-form h4 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.form-row { display: flex; flex-direction: column; gap: 0.3rem; border: none; padding: 0; margin: 0; }
+.form-row label, .form-row legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  padding: 0;
+}
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.form-row textarea { resize: vertical; }
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  color: var(--ink);
+  margin-right: 0.75rem;
+  font-size: 0.92rem;
+}
+.demo-submit {
+  align-self: flex-start;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.demo-submit:hover { opacity: 0.9; }
+.demo-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 3 · ตกแต่งหน้าตา</p>
+    <h1>CSS พื้นฐาน: ตกแต่งฟอร์มให้ใช้งานง่ายขึ้น</h1>
+    <p class="lesson-meta">ใช้เวลาทำประมาณ 20 นาที · ต่อยอดจากไฟล์ report.html ในบทที่ 2</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    ฟอร์มจากบทที่แล้วใช้งานได้ แต่หน้าตายังเป็นค่าเริ่มต้นของเบราว์เซอร์ล้วนๆ — ทุก input ชิดกัน
+    ไม่มีสี ไม่มีระยะห่าง วันนี้เราจะใช้ <strong>CSS</strong> แต่งให้มันดูเป็นระบบงานจริง
+  </p>
+
+  <h2>1. CSS คือชุดกฎ "เลือกอะไร แล้วแต่งยังไง"</h2>
+  <p>ทุกกฎ CSS มีรูปแบบเดียวกันเสมอ:</p>
+  <pre><code>selector {
+  property: value;
+}</code></pre>
+  <p>
+    เช่น <code>label { color: #52696c; }</code> แปลว่า "ทุก <code>&lt;label&gt;</code> ในหน้านี้ ให้ใช้สีนี้"
+    วิธีใส่ CSS เข้าไฟล์มี 3 แบบ แต่ที่ควรใช้จริงคือ <strong>ไฟล์ .css แยกต่างหาก</strong>
+    แล้วเชื่อมเข้า HTML ด้วย <code>&lt;link&gt;</code> ในส่วน <code>&lt;head&gt;</code>:
+  </p>
+  <pre><code>&lt;head&gt;
+  &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;</code></pre>
+  <p>
+    ข้อดีคือไฟล์เดียวใช้กับหลายหน้าเว็บได้ (บทหลังๆ เราจะมีหลายหน้า เช่น หน้าฟอร์ม กับหน้ารายการรายงาน
+    ใช้ style.css ไฟล์เดียวกันทั้งคู่)
+  </p>
+
+  <h2>2. เลือกเป้าหมายด้วย selector 3 แบบหลัก</h2>
+  <ul>
+    <li><code>label</code> — เลือกตาม <strong>ชื่อ tag</strong> ทุกตัวในหน้าโดนหมด</li>
+    <li><code>.field</code> — เลือกตาม <strong>class</strong> (จุดที่ใส่ <code>class="field"</code> ใน HTML) ใช้ซ้ำได้หลายจุด</li>
+    <li><code>#reporter-name</code> — เลือกตาม <strong>id</strong> เจาะจงจุดเดียวในหน้า</li>
+  </ul>
+  <p>
+    กฎมือใหม่ที่ใช้ได้จริง: <strong>ใช้ class เป็นหลัก</strong> เพราะใช้ซ้ำได้ เก็บ id ไว้สำหรับเชื่อมกับ
+    <code>&lt;label for="..."&gt;</code> หรือให้ JavaScript หาเจอ (บทหน้า) เท่านั้น
+  </p>
+
+  <h2>3. Box Model — ทุก element คือกล่องซ้อนกัน</h2>
+  <p>
+    element ทุกตัวบนหน้าเว็บ ถูกมองเป็น "กล่อง" ที่มี 4 ชั้นซ้อนกันจากในสุดไปนอกสุด:
+  </p>
+  <div class="diagram">
+    <svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="แผนภาพ box model แสดงชั้น content, padding, border, margin ซ้อนกันจากในสุดไปนอกสุด">
+      <style>
+        .m-box { fill: none; stroke: var(--border-strong); stroke-width: 1.5; stroke-dasharray: 4 3; }
+        .b-box { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+        .p-box { fill: var(--code-bg); stroke: var(--border-strong); stroke-width: 1.5; }
+        .c-box { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+        .lbl { font: 600 12px "IBM Plex Mono", monospace; fill: var(--ink); }
+        .lbl-muted { font: 11px "IBM Plex Mono", monospace; fill: var(--muted); }
+      </style>
+      <rect class="m-box" x="20" y="20" width="520" height="240" rx="4"></rect>
+      <text class="lbl-muted" x="30" y="38">margin</text>
+
+      <rect class="b-box" x="70" y="55" width="420" height="170" rx="4"></rect>
+      <text class="lbl-muted" x="80" y="73">border</text>
+
+      <rect class="p-box" x="110" y="90" width="340" height="100" rx="3"></rect>
+      <text class="lbl-muted" x="120" y="107">padding</text>
+
+      <rect class="c-box" x="160" y="120" width="240" height="45" rx="2"></rect>
+      <text class="lbl" x="280" y="147" text-anchor="middle">content</text>
+    </svg>
+    <p class="diagram-caption">แผนภาพ 2 — content อยู่ในสุด ล้อมด้วย padding, border, margin ตามลำดับ</p>
+  </div>
+  <p>
+    <code>padding</code> คือช่องว่าง<em>ด้านในกรอบ</em> (ระหว่างเนื้อหากับเส้นขอบ) ส่วน <code>margin</code>
+    คือช่องว่าง<em>ด้านนอกกรอบ</em> (ระยะห่างจาก element ข้างเคียง) — สับสนสองอันนี้บ่อยที่สุดตอนเริ่มต้น
+  </p>
+
+  <h2>4. Flexbox — จัดฟิลด์ฟอร์มให้เรียงกันสวยๆ</h2>
+  <p>
+    ปกติ element จะเรียงต่อกันเรื่อยๆ ตามธรรมชาติ ถ้าอยากจัดเป็นแถวหรือคอลัมน์ที่มีระยะห่างสม่ำเสมอ
+    ใช้ <code>display: flex</code> กับ container ที่ครอบกลุ่มนั้น:
+  </p>
+  <pre><code>.form-field {
+  display: flex;
+  flex-direction: column; /* เรียงจากบนลงล่าง */
+  gap: 6px;               /* ระยะห่างระหว่างลูกแต่ละตัว */
+}</code></pre>
+  <p><code>gap</code> คือคำสั่งที่คุ้มค่าที่สุดใน flexbox — ทดแทนการไล่ตั้ง margin ทีละจุดได้เกือบหมด</p>
+
+  <h2>5. ใส่ CSS จริงให้ report.html</h2>
+  <p>สร้างไฟล์ <code>style.css</code> ข้างๆ <code>report.html</code> แล้วใส่:</p>
+  <pre><code>body {
+  font-family: sans-serif;
+  max-width: 480px;
+  margin: 40px auto;
+  background: #f4f6f5;
+  color: #1c2b2e;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #52696c;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 8px 10px;
+  border: 1px solid #cddad8;
+  border-radius: 4px;
+  font-size: 15px;
+}
+
+button {
+  background: #c8790f;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+}</code></pre>
+  <p>
+    แล้วห่อแต่ละ label+input ในบทที่แล้วด้วย <code>&lt;div class="form-field"&gt;...&lt;/div&gt;</code>
+    เพื่อให้ selector <code>.form-field</code> จับกลุ่มได้ถูก — เปิดเบราว์เซอร์ดูผลลัพธ์ ควรเห็นความต่างชัดเจนทันที
+  </p>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ลองปรับสีเป็นของตัวเอง</p>
+    <p>
+      ลองเปลี่ยนค่าสี (เช่น <code>#c8790f</code>) เป็นสีอื่นที่ชอบ แล้วดูว่าปุ่มเปลี่ยนสีตามจริงไหม —
+      วิธีที่เร็วที่สุดในการเข้าใจ CSS คือลองแก้ค่าแล้วดูผลทันที ถ้าอยากรู้จักสีเป็นระบบมากขึ้น
+      (เช่น ทำไมใช้ตัวเลขฐาน 16 แบบ <code>#c8790f</code>) ถามได้เลย
+    </p>
+  </div>
+
+  <div class="callout primary-source">
+    <p class="callout-title">แหล่งอ้างอิงหลัก</p>
+    <p>
+      MDN Web Docs สอน CSS ตั้งแต่ศูนย์ครบทั้ง box model และ flexbox:
+      <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics" target="_blank" rel="noopener">
+        CSS styling basics — MDN
+      </a>
+      แนะนำหัวข้อ "The box model" กับ "Flexbox" เป็นพิเศษ ตรงกับที่ใช้ในบทนี้
+    </p>
+  </div>
+
+  <h2>ทดสอบความเข้าใจ</h2>
+  <div class="quiz" id="quiz">
+
+    <div class="quiz-item" data-correct="1">
+      <p class="quiz-q">1. ช่องว่างระหว่างเนื้อหากับเส้นขอบของกล่อง (ด้านในกรอบ) เรียกว่าอะไร?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">margin คือช่องว่างด้านในกรอบ</button>
+        <button class="quiz-choice">padding คือช่องว่างด้านในกรอบ</button>
+        <button class="quiz-choice">border คือช่องว่างด้านในกรอบ</button>
+        <button class="quiz-choice">gap คือช่องว่างด้านในกรอบ</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+
+    <div class="quiz-item" data-correct="2">
+      <p class="quiz-q">2. ถ้าอยากใช้สไตล์เดียวกันซ้ำกับหลายฟิลด์ในฟอร์ม ควรเลือกด้วยอะไร?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">เลือกด้วยชื่อ tag ธรรมดาเท่านั้น</button>
+        <button class="quiz-choice">เลือกด้วย id ของแต่ละฟิลด์ทีละอัน</button>
+        <button class="quiz-choice">เลือกด้วย class ที่ใช้ซ้ำได้หลายจุด</button>
+        <button class="quiz-choice">เลือกด้วยเลขลำดับของ element</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+
+  </div>
+
+  <h2>บทต่อไปจะเรียนอะไร</h2>
+  <p>
+    ฟอร์มตอนนี้หน้าตาดีขึ้นมากแล้ว แต่กด "ส่งรายงาน" ก็ยังไม่มีอะไรเกิดขึ้นจริง
+    บทเรียนที่ 4 จะเรียน <strong>JavaScript</strong> เพื่อดักจับตอนกดปุ่ม อ่านค่าที่กรอกไว้
+    และเตรียมพร้อมสำหรับการส่งไปหา backend ในบทถัดๆ ไป
+  </p>
+
+  <div class="lesson-nav">
+    <span><a href="https://claude.ai/code/artifact/3f2a9863-4f52-446a-a191-995d7d39a130">← บทเรียนที่ 2: เขียน HTML หน้าแรก</a></span>
+    <span>บทเรียนที่ 4: JavaScript ฝั่งเบราว์เซอร์ (เร็วๆ นี้) →</span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.quiz-item').forEach(function (item) {
+      var correctIndex = parseInt(item.dataset.correct, 10);
+      var buttons = item.querySelectorAll('.quiz-choice');
+      var feedback = item.querySelector('.quiz-feedback');
+      var answered = false;
+      buttons.forEach(function (btn, i) {
+        btn.addEventListener('click', function () {
+          if (answered) return;
+          answered = true;
+          if (i === correctIndex) {
+            btn.classList.add('correct');
+            feedback.textContent = '[ถูกต้อง]';
+          } else {
+            btn.classList.add('incorrect');
+            buttons[correctIndex].classList.add('correct');
+            feedback.textContent = '[ยังไม่ถูก] คำตอบที่ถูกคือข้อที่ไฮไลต์ไว้';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Node.js กับ Express เบื้องต้น</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item,
+.fillblank-item + .fillblank-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Rendered form demo (lesson 2+) ---- */
+.rendered-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.rendered-form h4 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.form-row { display: flex; flex-direction: column; gap: 0.3rem; border: none; padding: 0; margin: 0; }
+.form-row label, .form-row legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  padding: 0;
+}
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.form-row textarea { resize: vertical; }
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  color: var(--ink);
+  margin-right: 0.75rem;
+  font-size: 0.92rem;
+}
+.demo-submit {
+  align-self: flex-start;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.demo-submit:hover { opacity: 0.9; }
+.demo-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 5 · ลงมือสร้าง Backend</p>
+    <h1>Node.js + Express: สร้างเซิร์ฟเวอร์ตัวแรก</h1>
+    <p class="lesson-meta">ใช้เวลาทำประมาณ 25-30 นาที · ต้องมี Node.js ติดตั้งในเครื่อง (เช็คด้วย <code>node -v</code> ใน terminal)</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    ถึงตอนนี้ทุกอย่างที่ทำมายังอยู่แค่ในเบราว์เซอร์เครื่องเดียว บทนี้จะสร้าง <strong>Backend</strong> ตัวจริง —
+    โปรแกรมที่รันแยกต่างหาก คอยรอรับคำขอจากฟอร์ม เปิดทางให้ข้อมูลเดินทางไปเก็บที่อื่นได้ในบทถัดๆ ไป
+  </p>
+
+  <h2>1. โปรเจกต์ Node.js เริ่มต้นด้วย package.json</h2>
+  <p>สร้างโฟลเดอร์ใหม่ (เช่น <code>ess-safety-app</code>) แล้วเปิด terminal ในโฟลเดอร์นั้น พิมพ์:</p>
+  <pre><code>npm init -y</code></pre>
+  <p>
+    คำสั่งนี้สร้างไฟล์ <code>package.json</code> — เอกสารกำกับโปรเจกต์ (ชื่อ, เวอร์ชัน, และที่สำคัญคือ
+    รายชื่อ "library" หรือ package ภายนอกที่โปรเจกต์นี้ใช้) เทียบง่ายๆ คือเหมือนไฟล์ config
+    ที่บอกว่าโปรเจกต์นี้ต้องมีอะไรบ้างถึงจะรันได้
+  </p>
+
+  <h2>2. ติดตั้ง Express</h2>
+  <p>
+    Node.js เปล่าๆ เขียน server ได้แต่ค่อนข้างยาก <strong>Express</strong> คือ library ที่ทำให้เขียนง่ายขึ้นมาก
+    เป็นตัวที่ใช้กันแพร่หลายที่สุดสำหรับงานนี้:
+  </p>
+  <pre><code>npm install express</code></pre>
+  <p>
+    คำสั่งนี้ดาวน์โหลด Express มาเก็บในโฟลเดอร์ <code>node_modules</code> และบันทึกไว้ใน
+    <code>package.json</code> ว่าโปรเจกต์นี้ต้องใช้ Express
+  </p>
+
+  <h2>3. เขียน server.js ตัวแรก</h2>
+  <pre><code>const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('เซิร์ฟเวอร์ทำงานแล้ว!');
+});
+
+app.listen(3000, () => {
+  console.log('เปิดรับคำขอที่ http://localhost:3000');
+});</code></pre>
+  <p>รันด้วย:</p>
+  <pre><code>node server.js</code></pre>
+  <p>
+    แล้วเปิดเบราว์เซอร์ไปที่ <code>http://localhost:3000</code> ควรเห็นข้อความ "เซิร์ฟเวอร์ทำงานแล้ว!"
+    — นี่คือ backend ตัวแรกในชีวิตที่รันจริง!
+  </p>
+
+  <h2>4. อ่านโค้ดทีละส่วน: route คืออะไร</h2>
+  <ul>
+    <li><code>app.get('/', ...)</code> — เมื่อมีคน<strong>ขอดู</strong> (GET) หน้าแรก <code>/</code> ให้ทำตามฟังก์ชันนี้</li>
+    <li><code>req</code> (request) — ข้อมูลของคำขอที่เข้ามา เช่น ใครส่งมา ส่งอะไรมาด้วย</li>
+    <li><code>res</code> (response) — เครื่องมือไว้ตอบกลับ เช่น <code>res.send()</code> ส่งข้อความ, <code>res.json()</code> ส่งข้อมูลแบบ JSON</li>
+    <li><code>app.listen(3000, ...)</code> — เปิดเซิร์ฟเวอร์ให้รอฟังที่ port 3000 (เลขห้องที่ใช้คุยกัน บนเครื่องเดียวกันเปิดได้หลาย port พร้อมกัน)</li>
+  </ul>
+
+  <h2>5. เพิ่ม route รับข้อมูลจากฟอร์ม (POST)</h2>
+  <p>Route แบบ GET ใช้สำหรับ "ขอดู" ส่วน POST ใช้สำหรับ "ส่งข้อมูลเข้าไป" — เพิ่มโค้ดนี้ต่อจาก route เดิม:</p>
+  <pre><code>app.use(express.json()); // ให้ Express อ่านข้อมูล JSON ที่ส่งมาได้
+
+app.post('/api/reports', (req, res) => {
+  console.log('ได้รับรายงาน:', req.body);
+  res.json({ success: true, message: 'บันทึกรายงานแล้ว' });
+});</code></pre>
+  <p>
+    <code>express.json()</code> คือ <strong>middleware</strong> — โค้ดที่ทำงานคั่นกลางก่อนถึง route handler เสมอ
+    หน้าที่ของมันคือแปลงข้อมูล JSON ดิบๆ ที่ส่งมาให้กลายเป็น <code>req.body</code> ที่ใช้งานได้ทันที
+  </p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="แผนภาพเส้นทางคำขอผ่าน middleware ไปยัง route handler แล้วตอบกลับ">
+      <defs>
+        <marker id="arrow5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+        </marker>
+      </defs>
+      <style>
+        .st5 { fill: var(--bg); stroke: var(--border-strong); stroke-width: 1.5; }
+        .lb5 { font: 600 12px "IBM Plex Sans Thai", sans-serif; fill: var(--ink); }
+        .sb5 { font: 10px "IBM Plex Mono", monospace; fill: var(--muted); }
+        .ar5 { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow5); }
+      </style>
+      <rect class="st5" x="10" y="70" width="120" height="60" rx="8"></rect>
+      <text class="lb5" x="70" y="95" text-anchor="middle">POST คำขอ</text>
+      <text class="sb5" x="70" y="112" text-anchor="middle">/api/reports</text>
+
+      <path class="ar5" d="M130,100 L190,100"></path>
+
+      <rect class="st5" x="190" y="70" width="150" height="60" rx="8"></rect>
+      <text class="lb5" x="265" y="90" text-anchor="middle">express.json()</text>
+      <text class="sb5" x="265" y="106" text-anchor="middle">middleware</text>
+      <text class="sb5" x="265" y="120" text-anchor="middle">แปลงเป็น req.body</text>
+
+      <path class="ar5" d="M340,100 L400,100"></path>
+
+      <rect class="st5" x="400" y="70" width="150" height="60" rx="8"></rect>
+      <text class="lb5" x="475" y="90" text-anchor="middle">route handler</text>
+      <text class="sb5" x="475" y="106" text-anchor="middle">บทหน้า: บันทึกลง DB</text>
+      <text class="sb5" x="475" y="120" text-anchor="middle">res.json(...)</text>
+
+      <path class="ar5" d="M475,130 Q475,165 130,165 Q60,165 60,130" fill="none"></path>
+      <text class="sb5" x="290" y="180" text-anchor="middle">ตอบกลับไปหาผู้ส่งคำขอ</text>
+    </svg>
+    <p class="diagram-caption">แผนภาพ 4 — คำขอไหลผ่าน middleware ก่อนถึง route handler แล้วย้อนกลับเป็น response</p>
+  </div>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ทดสอบ POST โดยยังไม่มีฟอร์ม</p>
+    <p>
+      ยังไม่ต้องต่อกับฟอร์มจริงในบทนี้ก็ได้ ลองทดสอบด้วยเครื่องมืออย่าง Postman หรือคำสั่ง
+      <code>curl -X POST http://localhost:3000/api/reports -H "Content-Type: application/json" -d '{"reporterName":"May"}'</code>
+      ใน terminal อีกหน้าต่าง (เปิดเซิร์ฟเวอร์ทิ้งไว้ด้วย) แล้วดูว่า terminal ฝั่งเซิร์ฟเวอร์ print ข้อมูลออกมาไหม
+      ติดขั้นตอนไหนถามได้เลย
+    </p>
+  </div>
+
+  <div class="callout primary-source">
+    <p class="callout-title">แหล่งอ้างอิงหลัก</p>
+    <p>
+      เอกสารทางการทั้งสองตัว:
+      <a href="https://nodejs.org/en/learn/getting-started/introduction-to-nodejs" target="_blank" rel="noopener">Introduction to Node.js — nodejs.org</a>
+      และ
+      <a href="https://expressjs.com/en/starter/hello-world.html" target="_blank" rel="noopener">Hello World — Express.js</a>
+    </p>
+  </div>
+
+  <h2>ทดสอบความเข้าใจ</h2>
+  <div class="quiz" id="quiz">
+    <div class="quiz-item" data-correct="2">
+      <p class="quiz-q">1. โค้ดที่ทำงานคั่นกลางก่อนถึง route handler เสมอ (เช่น แปลง JSON ให้อ่านง่าย) เรียกว่าอะไร?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">handler คือโค้ดที่ทำงานคั่นกลางเสมอ</button>
+        <button class="quiz-choice">endpoint คือโค้ดที่ทำงานคั่นกลางเสมอ</button>
+        <button class="quiz-choice">middleware คือโค้ดที่ทำงานคั่นกลางเสมอ</button>
+        <button class="quiz-choice">package คือโค้ดที่ทำงานคั่นกลางเสมอ</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+    <div class="quiz-item" data-correct="0">
+      <p class="quiz-q">2. คำขอแบบไหนที่เหมาะกับ "ส่งข้อมูลใหม่เข้าไปให้เซิร์ฟเวอร์เก็บ"?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">POST ใช้ส่งข้อมูลใหม่เข้าไปเก็บ</button>
+        <button class="quiz-choice">GET ใช้ส่งข้อมูลใหม่เข้าไปเก็บ</button>
+        <button class="quiz-choice">HTML ใช้ส่งข้อมูลใหม่เข้าไปเก็บ</button>
+        <button class="quiz-choice">CSS ใช้ส่งข้อมูลใหม่เข้าไปเก็บ</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+  </div>
+
+  <h2>บทต่อไปจะเรียนอะไร</h2>
+  <p>
+    มี server ที่รับข้อมูลได้แล้ว แต่ยังทดสอบด้วย curl/Postman อยู่ บทเรียนที่ 6 จะเอาฟอร์มจริงจากบทที่ 2-4
+    มาต่อกับ server ตัวนี้ผ่าน <code>fetch()</code> ให้กด "ส่งรายงาน" แล้วข้อมูลวิ่งไปถึง server จริงๆ
+  </p>
+
+  <div class="lesson-nav">
+    <span>← บทเรียนที่ 4: JavaScript ฝั่งเบราว์เซอร์</span>
+    <span>บทเรียนที่ 6: เชื่อม Frontend กับ Backend (เร็วๆ นี้) →</span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.quiz-item').forEach(function (item) {
+      var correctIndex = parseInt(item.dataset.correct, 10);
+      var buttons = item.querySelectorAll('.quiz-choice');
+      var feedback = item.querySelector('.quiz-feedback');
+      var answered = false;
+      buttons.forEach(function (btn, i) {
+        btn.addEventListener('click', function () {
+          if (answered) return;
+          answered = true;
+          if (i === correctIndex) {
+            btn.classList.add('correct');
+            feedback.textContent = '[ถูกต้อง]';
+          } else {
+            btn.classList.add('incorrect');
+            buttons[correctIndex].classList.add('correct');
+            feedback.textContent = '[ยังไม่ถูก] คำตอบที่ถูกคือข้อที่ไฮไลต์ไว้';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

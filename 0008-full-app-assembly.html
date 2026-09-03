@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ประกอบร่างเป็นแอปสมบูรณ์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item,
+.fillblank-item + .fillblank-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Rendered form demo (lesson 2+) ---- */
+.rendered-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.rendered-form h4 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.form-row { display: flex; flex-direction: column; gap: 0.3rem; border: none; padding: 0; margin: 0; }
+.form-row label, .form-row legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  padding: 0;
+}
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.form-row textarea { resize: vertical; }
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  color: var(--ink);
+  margin-right: 0.75rem;
+  font-size: 0.92rem;
+}
+.demo-submit {
+  align-self: flex-start;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.demo-submit:hover { opacity: 0.9; }
+.demo-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+/* ---- Data table (lesson 8+) ---- */
+.demo-table-wrap { overflow-x: auto; }
+table.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+}
+table.demo-table th, table.demo-table td {
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+table.demo-table th {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border-strong);
+}
+table.demo-table tr:last-child td { border-bottom: none; }
+.severity-pill {
+  display: inline-block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.severity-pill.low { background: var(--success-bg); color: var(--success); }
+.severity-pill.medium { background: var(--accent-soft); color: var(--accent-ink); }
+.severity-pill.high { background: var(--danger-bg); color: var(--danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 8 · โปรเจกต์ตัวอย่าง</p>
+    <h1>ประกอบร่างเป็นระบบแจ้งเหตุความปลอดภัยฉบับสมบูรณ์</h1>
+    <p class="lesson-meta">ใช้เวลาทำประมาณ 30 นาที · จุดรวมทุกบทที่ผ่านมาเป็นแอปเดียว</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    เดินทางมาไกลมากจากบทที่ 1 ตอนนี้มีฟอร์มที่รับข้อมูล, เซิร์ฟเวอร์ที่ประมวลผล, และฐานข้อมูลที่เก็บถาวรครบแล้ว
+    สิ่งเดียวที่ยังขาดคือ <strong>หน้าดูรายการทั้งหมด</strong> — เพราะตอนนี้พอส่งฟอร์มไปแล้ว
+    ไม่มีใครเห็นภาพรวมว่ามีรายงานอะไรบ้าง วันนี้จะเติมส่วนสุดท้ายนี้ให้ครบ
+  </p>
+
+  <h2>1. สร้างหน้า reports-list.html</h2>
+  <p>สร้างไฟล์ใหม่ในโฟลเดอร์ <code>public</code> ข้างๆ <code>report.html</code>:</p>
+  <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="th"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;รายการที่แจ้งไว้ทั้งหมด&lt;/title&gt;
+  &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;รายการแจ้งเหตุทั้งหมด&lt;/h1&gt;
+  &lt;table id="reports-table"&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;&lt;th&gt;วันที่&lt;/th&gt;&lt;th&gt;ผู้แจ้ง&lt;/th&gt;&lt;th&gt;สถานที่&lt;/th&gt;&lt;th&gt;ความรุนแรง&lt;/th&gt;&lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;&lt;!-- JS จะเติมแถวตรงนี้ --&gt;&lt;/tbody&gt;
+  &lt;/table&gt;
+  &lt;a href="report.html"&gt;+ แจ้งเหตุใหม่&lt;/a&gt;
+
+  &lt;script src="reports-list.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+  <h2>2. ดึงข้อมูลมาแสดงด้วย JavaScript</h2>
+  <p>สร้าง <code>reports-list.js</code>:</p>
+  <pre><code>window.addEventListener('DOMContentLoaded', async () => {
+  const response = await fetch('/api/reports');
+  const reports = await response.json();
+
+  const tbody = document.querySelector('#reports-table tbody');
+
+  reports.forEach((r) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      &lt;td&gt;${r.incidentDate}&lt;/td&gt;
+      &lt;td&gt;${r.reporterName}&lt;/td&gt;
+      &lt;td&gt;${r.location}&lt;/td&gt;
+      &lt;td&gt;${r.severity}&lt;/td&gt;
+    `;
+    tbody.appendChild(row);
+  });
+});</code></pre>
+  <p>
+    <code>DOMContentLoaded</code> คือ event ที่บอกว่า "หน้าโหลด HTML เสร็จแล้ว" — ต้องรอ event นี้ก่อน
+    เพราะถ้ายังไม่โหลดเสร็จ <code>document.querySelector('#reports-table')</code> จะยังหา element ไม่เจอ
+    ส่วน <code>forEach</code> ก็เหมือนการวน loop ผ่าน array ปกติที่คุ้นเคยจาก MQL5
+  </p>
+
+  <h2>3. ผลลัพธ์ที่ควรได้</h2>
+  <p>ตัวอย่างข้อมูลจำลอง (ของจริงจะดึงจากฐานข้อมูลที่คุณกรอกไว้เอง):</p>
+  <div class="diagram">
+    <div class="demo-table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>วันที่</th><th>ผู้แจ้ง</th><th>สถานที่</th><th>ความรุนแรง</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-09-01</td><td>สมชาย ใจดี</td><td>อาคาร A ชั้น 2</td><td><span class="severity-pill medium">ปานกลาง</span></td></tr>
+          <tr><td>2026-08-28</td><td>วิภา ทองคำ</td><td>โกดังสินค้า B</td><td><span class="severity-pill low">ต่ำ</span></td></tr>
+          <tr><td>2026-08-25</td><td>ประยุทธ สายชล</td><td>ลานจอดรถ</td><td><span class="severity-pill high">สูง</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="diagram-caption">ตัวอย่างที่ 2 — ข้อมูลจำลอง 3 แถว (ของคุณจริงจะมาจาก reports.db)</p>
+  </div>
+
+  <h2>4. โครงสร้างไฟล์ทั้งโปรเจกต์ตอนนี้</h2>
+  <pre><code>ess-safety-app/
+├── server.js          ← Express + SQLite (บทที่ 5-7)
+├── reports.db          ← ฐานข้อมูล (สร้างอัตโนมัติตอนรันครั้งแรก)
+├── package.json
+└── public/
+    ├── report.html      ← ฟอร์มแจ้งเหตุ (บทที่ 2-3)
+    ├── style.css         ← สไตล์ที่ใช้ร่วมกันทุกหน้า (บทที่ 3)
+    ├── app.js            ← จัดการฟอร์ม + fetch POST (บทที่ 4, 6)
+    ├── reports-list.html ← หน้ารายการทั้งหมด (บทนี้)
+    └── reports-list.js   ← ดึงข้อมูล + render ตาราง (บทนี้)</code></pre>
+  <p>
+    นี่คือโครงสร้างเว็บแอประดับ internal tool ทั่วไปจริงๆ — ไม่ซับซ้อนไปกว่านี้มากนักแม้แต่ในระบบที่ใช้งานจริงในบริษัท
+    ต่างกันแค่เรื่องขนาดข้อมูลกับจำนวนฟีเจอร์
+  </p>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ต่อยอดได้อีกถ้าอยากลองเอง</p>
+    <p>
+      ลองเพิ่มปุ่ม "ลบรายการ" (route <code>DELETE /api/reports/:id</code>) หรือช่องค้นหา/กรองตามความรุนแรง
+      ดูก็ได้ ถ้าไม่รู้จะเริ่มตรงไหนถามได้เลย เป็นวิธีฝึกที่ดีมากเพราะทุกอย่างที่ต้องใช้เรียนมาหมดแล้วในคอร์สนี้
+    </p>
+  </div>
+
+  <h2>ทบทวนทั้งเส้นทาง (ครอบคลุมทุกบท)</h2>
+  <div class="quiz" id="quiz">
+    <div class="quiz-item" data-correct="2">
+      <p class="quiz-q">1. ส่วนไหนของเว็บแอปที่ทำหน้าที่ "เก็บข้อมูลถาวร"?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">Frontend เป็นส่วนที่เก็บข้อมูลถาวร</button>
+        <button class="quiz-choice">Middleware เป็นส่วนที่เก็บข้อมูลถาวร</button>
+        <button class="quiz-choice">Database เป็นส่วนที่เก็บข้อมูลถาวร</button>
+        <button class="quiz-choice">Event listener เป็นส่วนที่เก็บข้อมูลถาวร</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+    <div class="quiz-item" data-correct="1">
+      <p class="quiz-q">2. คำสั่งไหนที่หยุดไม่ให้เบราว์เซอร์รีโหลดหน้าตอน submit ฟอร์ม?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">form.reset() คือคำสั่งหยุดรีโหลดหน้า</button>
+        <button class="quiz-choice">event.preventDefault() คือคำสั่งหยุดรีโหลดหน้า</button>
+        <button class="quiz-choice">express.static() คือคำสั่งหยุดรีโหลดหน้า</button>
+        <button class="quiz-choice">db.prepare() คือคำสั่งหยุดรีโหลดหน้า</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+    <div class="quiz-item" data-correct="0">
+      <p class="quiz-q">3. HTTP method แบบไหนที่ควรใช้ตอน "ขอดูรายการรายงานทั้งหมด" (ไม่เปลี่ยนแปลงข้อมูลอะไร)?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">GET ใช้สำหรับขอดูข้อมูลเฉยๆ</button>
+        <button class="quiz-choice">POST ใช้สำหรับขอดูข้อมูลเฉยๆ</button>
+        <button class="quiz-choice">CSS ใช้สำหรับขอดูข้อมูลเฉยๆ</button>
+        <button class="quiz-choice">SQL ใช้สำหรับขอดูข้อมูลเฉยๆ</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+    <div class="quiz-item" data-correct="3">
+      <p class="quiz-q">4. เหตุผลหลักที่เปลี่ยนจากเก็บใน array มาเป็น SQLite คืออะไร?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">SQLite ทำให้หน้าเว็บโหลดเร็วขึ้นมาก</button>
+        <button class="quiz-choice">SQLite ทำให้ CSS ทำงานได้ดีขึ้น</button>
+        <button class="quiz-choice">SQLite ไม่ต้องใช้ JavaScript เลย</button>
+        <button class="quiz-choice">SQLite ทำให้ข้อมูลไม่หายเมื่อ restart</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+  </div>
+
+  <h2>บทต่อไปจะเรียนอะไร</h2>
+  <p>
+    ตอนนี้แอปทำงานสมบูรณ์แล้ว — แต่ใช้ได้แค่ในเครื่องตัวเอง (localhost) เพื่อนร่วมงานที่ ESS ยังเข้าไม่ได้
+    บทเรียนสุดท้าย (บทที่ 9) จะพาไป <strong>deploy</strong> ให้คนอื่นเข้าใช้งานผ่านอินเทอร์เน็ตได้จริง
+    พร้อมข้อควรระวังเรื่องความปลอดภัยสำหรับข้อมูลบริษัท
+  </p>
+
+  <div class="lesson-nav">
+    <span>← บทเรียนที่ 7: ฐานข้อมูล SQLite</span>
+    <span>บทเรียนที่ 9: Deploy ให้ใช้งานจริง (เร็วๆ นี้) →</span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.quiz-item').forEach(function (item) {
+      var correctIndex = parseInt(item.dataset.correct, 10);
+      var buttons = item.querySelectorAll('.quiz-choice');
+      var feedback = item.querySelector('.quiz-feedback');
+      var answered = false;
+      buttons.forEach(function (btn, i) {
+        btn.addEventListener('click', function () {
+          if (answered) return;
+          answered = true;
+          if (i === correctIndex) {
+            btn.classList.add('correct');
+            feedback.textContent = '[ถูกต้อง]';
+          } else {
+            btn.classList.add('incorrect');
+            buttons[correctIndex].classList.add('correct');
+            feedback.textContent = '[ยังไม่ถูก] คำตอบที่ถูกคือข้อที่ไฮไลต์ไว้';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

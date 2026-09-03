@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ฐานข้อมูล SQLite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item,
+.fillblank-item + .fillblank-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Rendered form demo (lesson 2+) ---- */
+.rendered-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.rendered-form h4 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.form-row { display: flex; flex-direction: column; gap: 0.3rem; border: none; padding: 0; margin: 0; }
+.form-row label, .form-row legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  padding: 0;
+}
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.form-row textarea { resize: vertical; }
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  color: var(--ink);
+  margin-right: 0.75rem;
+  font-size: 0.92rem;
+}
+.demo-submit {
+  align-self: flex-start;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.demo-submit:hover { opacity: 0.9; }
+.demo-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 7 · ทำให้ข้อมูลอยู่ถาวร</p>
+    <h1>ฐานข้อมูล SQLite: ข้อมูลไม่หายอีกต่อไป</h1>
+    <p class="lesson-meta">ใช้เวลาทำประมาณ 25-30 นาที · ต่อยอดจาก server.js ในบทที่ 6</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    บทที่แล้วข้อมูลเก็บใน array — พอ restart server ข้อมูลหายหมด สำหรับระบบที่ใช้งานจริงในบริษัทแบบนี้ไม่ได้แน่นอน
+    วันนี้จะเปลี่ยนไปเก็บใน <strong>SQLite</strong> ฐานข้อมูลที่เก็บเป็นไฟล์เดียว ไม่ต้องติดตั้ง server ฐานข้อมูลแยก —
+    เหมาะกับ internal tool ขนาดเล็กแบบระบบแจ้งเหตุนี้พอดี
+  </p>
+
+  <h2>1. ติดตั้ง better-sqlite3</h2>
+  <pre><code>npm install better-sqlite3</code></pre>
+  <p>
+    เป็น library ที่นิยมที่สุดตัวหนึ่งสำหรับใช้ SQLite ใน Node.js เขียนง่าย ทำงานแบบ synchronous
+    (ไม่ต้องยุ่งกับ async/await ตอนคุยกับฐานข้อมูล ซึ่งเหมาะกับแอปขนาดเล็กแบบนี้)
+  </p>
+
+  <h2>2. สร้างตารางเก็บรายงาน</h2>
+  <p>เพิ่มโค้ดนี้ต่อจาก <code>require('express')</code> บนสุดของ <code>server.js</code>:</p>
+  <pre><code>const Database = require('better-sqlite3');
+const db = new Database('reports.db');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reporterName TEXT,
+    incidentDate TEXT,
+    location TEXT,
+    incidentType TEXT,
+    severity TEXT,
+    details TEXT,
+    createdAt TEXT
+  )
+`);</code></pre>
+  <p>
+    <code>CREATE TABLE IF NOT EXISTS</code> แปลว่า "สร้างตารางนี้ถ้ายังไม่มี" — รันซ้ำกี่ครั้งก็ไม่พังตารางเดิม
+    <code>INTEGER PRIMARY KEY AUTOINCREMENT</code> คือให้ SQLite นับเลข id ให้เองอัตโนมัติทีละ 1
+    ไม่ต้องคำนวณเองแบบตอนใช้ array
+  </p>
+
+  <h2>3. แก้ route ให้ INSERT ลงฐานข้อมูลจริง</h2>
+  <pre><code>const insertReport = db.prepare(`
+  INSERT INTO reports (reporterName, incidentDate, location, incidentType, severity, details, createdAt)
+  VALUES (@reporterName, @incidentDate, @location, @incidentType, @severity, @details, @createdAt)
+`);
+
+app.post('/api/reports', (req, res) => {
+  const createdAt = new Date().toISOString();
+  const result = insertReport.run({ ...req.body, createdAt });
+  res.json({ success: true, message: 'บันทึกรายงานแล้ว (รายการที่ ' + result.lastInsertRowid + ')' });
+});</code></pre>
+  <p>
+    <code>db.prepare(...)</code> เตรียมคำสั่ง SQL ไว้ล่วงหน้า (เร็วกว่าและปลอดภัยกว่าการต่อ string SQL เอง —
+    ป้องกันการโจมตีแบบ SQL injection ไปในตัว) ส่วน <code>@reporterName</code> คือ placeholder
+    ที่จะถูกแทนที่ด้วยค่าจาก object ที่ส่งเข้าไปตอนเรียก <code>.run()</code>
+  </p>
+
+  <h2>4. แก้ route ให้ SELECT จากฐานข้อมูลจริง</h2>
+  <pre><code>const getAllReports = db.prepare('SELECT * FROM reports ORDER BY id DESC');
+
+app.get('/api/reports', (req, res) => {
+  res.json(getAllReports.all());
+});</code></pre>
+  <p><code>ORDER BY id DESC</code> คือเรียงจากรายการล่าสุดขึ้นก่อน (DESC ย่อจาก descending)</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="แผนภาพระบบครบวงจรตอนนี้ ตั้งแต่ฟอร์มจนถึงฐานข้อมูลถาวร">
+      <defs>
+        <marker id="arrow7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+        </marker>
+      </defs>
+      <style>
+        .st7 { fill: var(--bg); stroke: var(--border-strong); stroke-width: 1.5; }
+        .lb7 { font: 600 13px "IBM Plex Sans Thai", sans-serif; fill: var(--ink); }
+        .sb7 { font: 10px "IBM Plex Mono", monospace; fill: var(--muted); }
+        .ar7 { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow7); }
+      </style>
+      <rect class="st7" x="10" y="70" width="130" height="60" rx="8"></rect>
+      <text class="lb7" x="75" y="95" text-anchor="middle">Frontend</text>
+      <text class="sb7" x="75" y="112" text-anchor="middle">report.html</text>
+
+      <path class="ar7" d="M140,90 L200,90"></path>
+      <text class="sb7" x="170" y="80" text-anchor="middle">fetch POST</text>
+      <path class="ar7" d="M200,110 L140,110"></path>
+
+      <rect class="st7" x="200" y="70" width="160" height="60" rx="8"></rect>
+      <text class="lb7" x="280" y="90" text-anchor="middle">Backend</text>
+      <text class="sb7" x="280" y="106" text-anchor="middle">server.js (Express)</text>
+      <text class="sb7" x="280" y="120" text-anchor="middle">insertReport.run()</text>
+
+      <path class="ar7" d="M360,90 L420,90"></path>
+      <text class="sb7" x="390" y="80" text-anchor="middle">SQL</text>
+      <path class="ar7" d="M420,110 L360,110"></path>
+
+      <rect class="st7" x="420" y="70" width="160" height="60" rx="8"></rect>
+      <text class="lb7" x="500" y="90" text-anchor="middle">Database</text>
+      <text class="sb7" x="500" y="106" text-anchor="middle">reports.db</text>
+      <text class="sb7" x="500" y="120" text-anchor="middle">ไฟล์เดียว เก็บถาวร</text>
+
+      <text class="sb7" x="290" y="165" text-anchor="middle">ครบ 3 ส่วนตามแผนภาพในบทที่ 1 — ตอนนี้เป็นของจริงแล้ว</text>
+    </svg>
+    <p class="diagram-caption">แผนภาพ 5 — ระบบแจ้งเหตุความปลอดภัยทำงานครบวงจรจริง ข้อมูลอยู่ถาวรใน reports.db</p>
+  </div>
+
+  <h2>5. ทดสอบความถาวร</h2>
+  <ol>
+    <li>รัน <code>node server.js</code>, ส่งฟอร์มสัก 2-3 รายการ</li>
+    <li>กด <code>Ctrl+C</code> ปิด server ใน terminal</li>
+    <li>รัน <code>node server.js</code> ใหม่อีกครั้ง</li>
+    <li>เปิด <code>http://localhost:3000/api/reports</code> — ข้อมูลเดิมยังอยู่ครบ!</li>
+  </ol>
+  <p>
+    ลองเปิดไฟล์ <code>reports.db</code> ดูก็ได้ (เป็นไฟล์ binary เปิดตรงๆ ไม่ได้ แต่มีเครื่องมือฟรีอย่าง
+    <a href="https://sqlitebrowser.org/" target="_blank" rel="noopener">DB Browser for SQLite</a> เปิดดูตารางแบบเห็นภาพได้)
+  </p>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ข้อมูลพนักงาน/เงินเดือน ต้องระวังอะไรเพิ่ม</p>
+    <p>
+      ถ้าจะเอาไปใช้กับข้อมูลเงินเดือนจริง มีเรื่องต้องคิดเพิ่มจากนี้ เช่น การเข้ารหัสไฟล์ฐานข้อมูล
+      การจำกัดสิทธิ์ว่าใครดูอะไรได้บ้าง (authentication/authorization) — ยังไม่ครอบคลุมในคอร์สนี้
+      แต่ถามได้เลยถ้าอยากรู้ทิศทางคร่าวๆ ก่อนจะเอาไปใช้จริงกับข้อมูลอ่อนไหว
+    </p>
+  </div>
+
+  <div class="callout primary-source">
+    <p class="callout-title">แหล่งอ้างอิงหลัก</p>
+    <p>
+      เอกสารทางการของ better-sqlite3:
+      <a href="https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md" target="_blank" rel="noopener">API Reference — better-sqlite3</a>
+      และภาพรวมของ SQLite เองจาก
+      <a href="https://www.sqlite.org/about.html" target="_blank" rel="noopener">About SQLite — sqlite.org</a>
+    </p>
+  </div>
+
+  <h2>ทดสอบความเข้าใจ</h2>
+  <div class="quiz" id="quiz">
+    <div class="quiz-item" data-correct="1">
+      <p class="quiz-q">1. ทำไมใช้ db.prepare() แทนการต่อ string SQL เอง?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">เพราะทำให้ไฟล์ .db มีขนาดเล็กลง</button>
+        <button class="quiz-choice">เพราะเร็วกว่าและป้องกัน SQL injection</button>
+        <button class="quiz-choice">เพราะเป็นข้อบังคับของภาษา JavaScript</button>
+        <button class="quiz-choice">เพราะทำให้ server รันเร็วขึ้นสิบเท่า</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+    <div class="quiz-item" data-correct="0">
+      <p class="quiz-q">2. ทำไมข้อมูลใน SQLite ไม่หายเมื่อ restart server (ต่างจาก array)?</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice">เพราะ SQLite เก็บข้อมูลลงไฟล์บนดิสก์จริง</button>
+        <button class="quiz-choice">เพราะ array ใช้ได้แค่ครั้งเดียวเท่านั้น</button>
+        <button class="quiz-choice">เพราะ Node.js บันทึกหน่วยความจำอัตโนมัติ</button>
+        <button class="quiz-choice">เพราะ Express มีฟีเจอร์กันข้อมูลหายในตัว</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+  </div>
+
+  <h2>บทต่อไปจะเรียนอะไร</h2>
+  <p>
+    ตอนนี้มีระบบที่รับและเก็บรายงานได้ถาวรแล้ว บทเรียนที่ 8 จะประกอบร่างเป็น <strong>แอปที่สมบูรณ์</strong> —
+    เพิ่มหน้าแสดงรายการรายงานทั้งหมดที่เคยแจ้งไว้ ให้เห็นภาพรวมทั้งระบบตั้งแต่ต้นจนจบ
+  </p>
+
+  <div class="lesson-nav">
+    <span>← บทเรียนที่ 6: เชื่อม Frontend กับ Backend</span>
+    <span>บทเรียนที่ 8: ประกอบร่างเป็นระบบสมบูรณ์ (เร็วๆ นี้) →</span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.quiz-item').forEach(function (item) {
+      var correctIndex = parseInt(item.dataset.correct, 10);
+      var buttons = item.querySelectorAll('.quiz-choice');
+      var feedback = item.querySelector('.quiz-feedback');
+      var answered = false;
+      buttons.forEach(function (btn, i) {
+        btn.addEventListener('click', function () {
+          if (answered) return;
+          answered = true;
+          if (i === correctIndex) {
+            btn.classList.add('correct');
+            feedback.textContent = '[ถูกต้อง]';
+          } else {
+            btn.classList.add('incorrect');
+            buttons[correctIndex].classList.add('correct');
+            feedback.textContent = '[ยังไม่ถูก] คำตอบที่ถูกคือข้อที่ไฮไลต์ไว้';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

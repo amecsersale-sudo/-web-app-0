@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaScript ฝั่งเบราว์เซอร์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item,
+.fillblank-item + .fillblank-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Rendered form demo (lesson 2+) ---- */
+.rendered-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.rendered-form h4 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.form-row { display: flex; flex-direction: column; gap: 0.3rem; border: none; padding: 0; margin: 0; }
+.form-row label, .form-row legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  padding: 0;
+}
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.form-row textarea { resize: vertical; }
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  color: var(--ink);
+  margin-right: 0.75rem;
+  font-size: 0.92rem;
+}
+.demo-submit {
+  align-self: flex-start;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.demo-submit:hover { opacity: 0.9; }
+.demo-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 4 · ทำให้หน้าเว็บโต้ตอบได้</p>
+    <h1>JavaScript ฝั่งเบราว์เซอร์: ดักจับการกดปุ่ม</h1>
+    <p class="lesson-meta">ใช้เวลาทำประมาณ 20-25 นาที · ต่อยอดจาก report.html + style.css ในบทที่แล้ว</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    ฟอร์มตอนนี้หน้าตาดีแล้ว แต่กดปุ่ม "ส่งรายงาน" ยังไม่มีอะไรเกิดขึ้นเลย เพราะเบราว์เซอร์ไม่รู้ว่าต้องทำอะไร —
+    นี่คือหน้าที่ของ <strong>JavaScript</strong> ภาษาเดียวที่รันในเบราว์เซอร์ได้โดยตรง
+    เพราะคุณมีพื้นฐาน MQL5 มาก่อน ตรรกะพื้นฐาน (ตัวแปร, if, loop) จะคุ้นเคยเร็ว — บทนี้เน้นเฉพาะส่วนที่เป็น "ของเว็บโดยเฉพาะ"
+  </p>
+
+  <h2>1. เชื่อม JavaScript เข้ากับ HTML</h2>
+  <p>สร้างไฟล์ <code>app.js</code> ข้างๆ <code>report.html</code> แล้วเชื่อมด้วย <code>&lt;script&gt;</code>
+  ก่อนปิด <code>&lt;/body&gt;</code>:</p>
+  <pre><code>&lt;body&gt;
+  ... ฟอร์มทั้งหมด ...
+
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;</code></pre>
+  <p>
+    วางไว้ท้าย <code>&lt;body&gt;</code> เพราะตอนสคริปต์รัน ต้องมีฟอร์มโหลดเสร็จอยู่ในหน้าแล้ว
+    ถ้าวางไว้บนสุดตั้งแต่ <code>&lt;head&gt;</code> สคริปต์จะรันก่อนฟอร์มโหลดเสร็จ แล้วหาฟอร์มไม่เจอ
+  </p>
+
+  <h2>2. DOM: วิธีที่ JavaScript "มองเห็น" หน้าเว็บ</h2>
+  <p>
+    เบราว์เซอร์แปลง HTML เป็นโครงสร้างต้นไม้ในหน่วยความจำ เรียกว่า <strong>DOM</strong>
+    (Document Object Model) — JavaScript ใช้ <code>document.querySelector()</code> เพื่อ "หยิบ" element ที่ต้องการมาใช้งาน:
+  </p>
+  <pre><code>const form = document.querySelector('form');
+const nameInput = document.querySelector('#reporter-name');
+
+console.log(nameInput.value); // ค่าที่คนกรอกไว้ตอนนี้</code></pre>
+  <p>
+    เทียบกับ MQL5: <code>document.querySelector</code> คล้ายการ <code>ObjectFind</code> หา object บนกราฟ —
+    ต่างกันตรงที่นี่หาจาก HTML element แทน
+  </p>
+
+  <h2>3. ดักจับ event ตอนกด submit</h2>
+  <pre><code>form.addEventListener('submit', function (event) {
+  event.preventDefault(); // หยุดพฤติกรรมเริ่มต้น (รีโหลดหน้า)
+  console.log('กดส่งฟอร์มแล้ว!');
+});</code></pre>
+  <p>
+    ปกติเมื่อกด submit เบราว์เซอร์จะ<strong>รีโหลดหน้าใหม่ทันที</strong> — เป็นพฤติกรรมเก่าแก่ตั้งแต่ยุคเว็บแรกๆ
+    <code>event.preventDefault()</code> คือคำสั่งบอกว่า "หยุดก่อน อย่าเพิ่งรีโหลด ให้ JavaScript จัดการเอง"
+    ซึ่งจำเป็นมาก เพราะบทหน้าเราจะส่งข้อมูลผ่าน JavaScript แทน (ไม่ให้หน้ารีโหลดทิ้งข้อมูลไปก่อน)
+  </p>
+
+  <h2>4. อ่านค่าจากทุกฟิลด์พร้อมกันด้วย FormData</h2>
+  <p>แทนที่จะอ่านทีละช่อง ใช้ <code>FormData</code> เก็บค่าทั้งฟอร์มเป็นก้อนเดียว:</p>
+  <pre><code>form.addEventListener('submit', function (event) {
+  event.preventDefault();
+
+  const data = new FormData(form);
+  const report = {
+    reporterName: data.get('reporterName'),
+    incidentDate: data.get('incidentDate'),
+    location: data.get('location'),
+    incidentType: data.get('incidentType'),
+    severity: data.get('severity'),
+    details: data.get('details'),
+  };
+
+  console.log(report);
+});</code></pre>
+  <p>
+    <code>data.get('reporterName')</code> จะดึงค่าจาก input ที่มี <code>name="reporterName"</code> —
+    นี่คือเหตุผลที่บทที่ 2 ให้ทุก input ใส่ <code>name</code> ไว้ ไม่ใช่แค่ <code>id</code>
+  </p>
+
+  <h2>5. ตรวจสอบข้อมูลก่อนส่ง (Client-side validation)</h2>
+  <p>
+    เพิ่มการเช็คง่ายๆ ก่อนถือว่าข้อมูล "พร้อมส่ง" เช่น บังคับให้เลือกระดับความรุนแรงก่อน:
+  </p>
+  <pre><code>if (!report.severity) {
+  alert('กรุณาเลือกระดับความรุนแรงก่อนส่ง');
+  return; // ออกจากฟังก์ชัน ไม่ทำอะไรต่อ
+}
+
+console.log('ข้อมูลครบถ้วน พร้อมส่ง:', report);</code></pre>
+  <p>
+    ข้อสำคัญ: การเช็คแบบนี้เช็คแค่ <em>ฝั่งเบราว์เซอร์</em> เพื่อความสะดวกของผู้ใช้เท่านั้น
+    ยังต้องเช็คซ้ำที่ฝั่ง backend ด้วยเสมอ (บทที่ 5) เพราะคนที่ไม่หวังดีสามารถส่งข้อมูลตรงมาที่ server
+    โดยข้ามเบราว์เซอร์ไปเลยก็ได้
+  </p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 600 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="แผนภาพลำดับเหตุการณ์ตอนกดปุ่มส่งฟอร์ม">
+      <defs>
+        <marker id="arrow4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+        </marker>
+      </defs>
+      <style>
+        .st4 { fill: var(--bg); stroke: var(--border-strong); stroke-width: 1.5; }
+        .lb4 { font: 600 13px "IBM Plex Sans Thai", sans-serif; fill: var(--ink); }
+        .sb4 { font: 11px "IBM Plex Mono", monospace; fill: var(--muted); }
+        .ar4 { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow4); }
+      </style>
+      <rect class="st4" x="10" y="70" width="130" height="60" rx="8"></rect>
+      <text class="lb4" x="75" y="95" text-anchor="middle">กด "ส่งรายงาน"</text>
+      <text class="sb4" x="75" y="112" text-anchor="middle">(คนใช้งาน)</text>
+
+      <path class="ar4" d="M140,100 L200,100"></path>
+      <text class="sb4" x="170" y="90" text-anchor="middle">submit event</text>
+
+      <rect class="st4" x="200" y="70" width="150" height="60" rx="8"></rect>
+      <text class="lb4" x="275" y="95" text-anchor="middle">preventDefault()</text>
+      <text class="sb4" x="275" y="112" text-anchor="middle">หยุดรีโหลดหน้า</text>
+
+      <path class="ar4" d="M350,100 L410,100"></path>
+      <text class="sb4" x="380" y="90" text-anchor="middle">อ่านค่า</text>
+
+      <rect class="st4" x="410" y="70" width="150" height="60" rx="8"></rect>
+      <text class="lb4" x="485" y="95" text-anchor="middle">ตรวจสอบ + เก็บ</text>
+      <text class="sb4" x="485" y="112" text-anchor="middle">FormData → object</text>
+
+      <text class="sb4" x="485" y="155" text-anchor="middle">บทหน้า: ส่งต่อไปที่ server จริง</text>
+    </svg>
+    <p class="diagram-caption">แผนภาพ 3 — ลำดับเหตุการณ์ตั้งแต่กดปุ่มจนข้อมูลพร้อมส่ง</p>
+  </div>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ทดสอบด้วย console</p>
+    <p>
+      เปิด Developer Tools ในเบราว์เซอร์ (กด F12 หรือคลิกขวา → Inspect) ไปแท็บ Console
+      แล้วลองกรอกฟอร์มกด submit ดู ควรเห็นข้อมูลที่กรอกไว้โผล่ใน console เป็น object —
+      ถ้าไม่เห็นอะไรเลย ให้เช็คว่าไฟล์ <code>app.js</code> เชื่อมถูกต้องหรือมี error สีแดงขึ้นไหม ถามได้เลยถ้าติด
+    </p>
+  </div>
+
+  <div class="callout primary-source">
+    <p class="callout-title">แหล่งอ้างอิงหลัก</p>
+    <p>
+      MDN Web Docs สอน JavaScript พื้นฐานสำหรับหน้าเว็บ:
+      <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Events" target="_blank" rel="noopener">
+        Introduction to events — MDN
+      </a>
+      และ
+      <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation" target="_blank" rel="noopener">
+        Client-side form validation — MDN
+      </a>
+    </p>
+  </div>
+
+  <h2>ทดสอบความเข้าใจ</h2>
+  <div class="quiz" id="fillquiz">
+
+    <div class="fillblank-item" data-answers="preventDefault">
+      <p class="quiz-q">1. เมธอดที่ใช้หยุดไม่ให้เบราว์เซอร์รีโหลดหน้าเมื่อ submit ฟอร์ม ชื่อว่าอะไร? (พิมพ์แบบไม่ต้องมีวงเล็บ)</p>
+      <div class="fillblank">
+        <code>event.____()</code><br><br>
+        <input type="text" placeholder="พิมพ์ชื่อเมธอด">
+        <button type="button">ตรวจคำตอบ</button>
+        <span class="fillblank-feedback"></span>
+      </div>
+    </div>
+
+    <div class="fillblank-item" data-answers="addEventListener">
+      <p class="quiz-q">2. เมธอดที่ใช้บอก element ว่า "พอเกิดเหตุการณ์นี้ ให้รันฟังก์ชันนี้" ชื่อว่าอะไร?</p>
+      <div class="fillblank">
+        <code>form.____('submit', function () { ... })</code><br><br>
+        <input type="text" placeholder="พิมพ์ชื่อเมธอด">
+        <button type="button">ตรวจคำตอบ</button>
+        <span class="fillblank-feedback"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>บทต่อไปจะเรียนอะไร</h2>
+  <p>
+    ตอนนี้ฟอร์มอ่านค่าและตรวจสอบข้อมูลได้แล้ว แต่ข้อมูลยังไปไม่ถึงไหน (แค่โผล่ใน console ของเบราว์เซอร์ตัวเอง)
+    บทเรียนที่ 5 จะเริ่มสร้าง <strong>Backend ด้วย Node.js</strong> จริงจัง — เซิร์ฟเวอร์ตัวแรกที่รันบนเครื่อง
+    รอรับข้อมูลจากฟอร์มนี้
+  </p>
+
+  <div class="lesson-nav">
+    <span>← บทเรียนที่ 3: ตกแต่งฟอร์มด้วย CSS</span>
+    <span>บทเรียนที่ 5: Node.js + Express เบื้องต้น (เร็วๆ นี้) →</span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.fillblank-item').forEach(function (item) {
+      var accepted = item.dataset.answers.split(',').map(function (s) { return s.trim().toLowerCase(); });
+      var input = item.querySelector('.fillblank input[type="text"]');
+      var btn = item.querySelector('.fillblank button');
+      var feedback = item.querySelector('.fillblank-feedback');
+      btn.addEventListener('click', function () {
+        var val = input.value.trim().toLowerCase();
+        if (accepted.indexOf(val) !== -1) {
+          input.classList.remove('incorrect'); input.classList.add('correct');
+          feedback.textContent = '[ถูกต้อง]';
+        } else {
+          input.classList.remove('correct'); input.classList.add('incorrect');
+          feedback.textContent = '[ยังไม่ถูก] ลองอีกครั้ง';
+        }
+      });
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); btn.click(); } });
+    });
+  </script>
+
+</body>
+</html>

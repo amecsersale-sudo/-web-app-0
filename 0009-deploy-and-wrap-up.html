@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deploy และสรุปคอร์ส</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item,
+.fillblank-item + .fillblank-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Rendered form demo (lesson 2+) ---- */
+.rendered-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.rendered-form h4 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.form-row { display: flex; flex-direction: column; gap: 0.3rem; border: none; padding: 0; margin: 0; }
+.form-row label, .form-row legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  padding: 0;
+}
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.form-row textarea { resize: vertical; }
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  color: var(--ink);
+  margin-right: 0.75rem;
+  font-size: 0.92rem;
+}
+.demo-submit {
+  align-self: flex-start;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.demo-submit:hover { opacity: 0.9; }
+.demo-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+/* ---- Data table (lesson 8+) ---- */
+.demo-table-wrap { overflow-x: auto; }
+table.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+}
+table.demo-table th, table.demo-table td {
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+table.demo-table th {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border-strong);
+}
+table.demo-table tr:last-child td { border-bottom: none; }
+.severity-pill {
+  display: inline-block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.severity-pill.low { background: var(--success-bg); color: var(--success); }
+.severity-pill.medium { background: var(--accent-soft); color: var(--accent-ink); }
+.severity-pill.high { background: var(--danger-bg); color: var(--danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 9 · บทสุดท้าย</p>
+    <h1>Deploy ให้ใช้งานจริง + สรุปคอร์ส</h1>
+    <p class="lesson-meta">ใช้เวลาทำประมาณ 20-30 นาที · บทสุดท้ายของหลักสูตร "สอนทำ Web App ตั้งแต่ 0"</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    แอปทำงานสมบูรณ์แล้วบนเครื่องตัวเอง (localhost) แต่เพื่อนร่วมงานที่ ESS ยังเข้าไม่ได้เพราะ
+    <code>localhost</code> หมายถึง "เครื่องนี้เท่านั้น" บทสุดท้ายนี้จะพาเลือกทางที่เหมาะกับงานจริง
+    แล้วสรุปภาพรวมทั้งหลักสูตร
+  </p>
+
+  <h2>1. ทำไมไม่ใช้ Cloudflare Pages ตรงๆ</h2>
+  <p>
+    ตอนต้นคอร์สเคยพูดถึง Cloudflare — ข้อควรรู้คือ Cloudflare Pages ถูกออกแบบมาสำหรับเว็บที่เป็นไฟล์ static
+    (HTML/CSS/JS ล้วนๆ ไม่มี server ประมวลผลต่อเนื่อง) ส่วนแอปของเราต้องมี Express รันตลอดเวลา
+    และมีไฟล์ฐานข้อมูล SQLite ที่ต้องเก็บถาวร ซึ่งไม่ตรงกับรูปแบบที่ Cloudflare Pages ทำได้ตรงๆ
+    (มีทางเลือกขั้นสูงกว่าคือ Cloudflare Workers + D1 แต่ต้องปรับโค้ดพอสมควร ไว้เป็นบทต่อยอดในอนาคต)
+  </p>
+
+  <h2>2. ตัวเลือกที่เหมาะกับแอปแบบนี้</h2>
+
+  <h3>ตัวเลือก A — รันบนเครื่อง/เซิร์ฟเวอร์ในบริษัท (แนะนำสำหรับข้อมูลอ่อนไหว)</h3>
+  <p>
+    สำหรับระบบที่มีข้อมูลพนักงาน/เงินเดือน วิธีที่ปลอดภัยและง่ายที่สุดคือรันบนเครื่องหรือเซิร์ฟเวอร์
+    ที่อยู่ใน<strong>เครือข่ายภายในบริษัท</strong> (LAN) ไม่ต้องเปิดออกอินเทอร์เน็ตสาธารณะเลย —
+    เพื่อนร่วมงานเข้าผ่าน IP เครื่อง เช่น <code>http://192.168.1.50:3000</code> ได้จากคอมในออฟฟิศเดียวกัน
+    ข้อดีคือควบคุมความปลอดภัยได้เต็มที่ ไม่มีค่าใช้จ่ายรายเดือน เหมาะกับข้อมูลเงินเดือนที่สุด
+  </p>
+
+  <h3>ตัวเลือก B — Railway (ถ้าต้องเข้าถึงได้จากนอกบริษัทด้วย)</h3>
+  <p>
+    <a href="https://railway.app" target="_blank" rel="noopener">Railway</a> รองรับ persistent volume
+    สำหรับเก็บไฟล์อย่าง <code>reports.db</code> ได้จริง และรองรับ Node.js โดยตรง เริ่มต้นมีเครดิตทดลองใช้ฟรี
+    ก่อนเข้าสู่การคิดค่าใช้จ่ายตามการใช้งานจริง (usage-based) เหมาะถ้าต้องการให้เข้าถึงได้จากทุกที่จริงๆ
+  </p>
+
+  <h3>ตัวเลือก C — Render (ต้องอัปเกรดแผนเพื่อเก็บข้อมูลถาวร)</h3>
+  <p>
+    <a href="https://render.com" target="_blank" rel="noopener">Render</a> ใช้งานง่ายคล้าย Railway
+    แต่ตาม<a href="https://render.com/docs/faq" target="_blank" rel="noopener">เอกสารทางการของ Render</a>
+    เอง แผนฟรีมี filesystem แบบชั่วคราว (ไฟล์หายทุกครั้งที่ redeploy) — ถ้าจะเก็บ <code>reports.db</code>
+    ถาวรจริง ต้องอัปเกรดเป็นแผนเสียเงินที่รองรับ persistent disk
+  </p>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">สรุปคำแนะนำสำหรับ ESS</p>
+    <p>
+      ถ้าระบบนี้มีแค่คนในบริษัทใช้ — <strong>ตัวเลือก A (รันในเครือข่ายภายใน)</strong> คุ้มค่าที่สุดทั้งด้านความปลอดภัย
+      และไม่มีค่าใช้จ่าย ถ้าจำเป็นต้องให้พนักงานเข้าจากนอกบริษัท (เช่น ทำงานจากบ้าน) ค่อยพิจารณา Railway
+      แล้วเพิ่มระบบล็อกอินก่อนเปิดใช้งานจริงเสมอ — ยินดีช่วยดูรายละเอียดเพิ่มถ้าต้องการเจาะจงขึ้น
+    </p>
+  </div>
+
+  <h2>3. ขั้นตอน deploy แบบย่อ (ตัวเลือก B/C)</h2>
+  <ol>
+    <li>สร้างบัญชี GitHub (ถ้ายังไม่มี) แล้ว push โค้ดทั้งโปรเจกต์ขึ้น repository</li>
+    <li>สมัครบัญชี Railway หรือ Render แล้วเชื่อมกับ GitHub repo นั้น</li>
+    <li>ตั้งค่า build command: <code>npm install</code></li>
+    <li>ตั้งค่า start command: <code>node server.js</code></li>
+    <li>ถ้าใช้ Railway: เพิ่ม Volume แล้ว mount ไปที่โฟลเดอร์ที่เก็บ <code>reports.db</code></li>
+    <li>กด deploy — ได้ URL สาธารณะกลับมา (เช่น <code>https://ess-safety-app.up.railway.app</code>)</li>
+  </ol>
+
+  <h2>4. ข้อควรระวังก่อนใช้งานจริงกับข้อมูลบริษัท</h2>
+  <ul>
+    <li><strong>ห้ามเปิดสาธารณะโดยไม่มีการล็อกอิน</strong> ถ้าเป็นข้อมูลเงินเดือนหรือข้อมูลส่วนบุคคลของพนักงาน</li>
+    <li>เพิ่มระบบยืนยันตัวตนอย่างน้อยแบบง่าย (เช่น รหัสผ่านเดียวกันทั้งทีม หรือ login ด้วยอีเมลบริษัท) ก่อนเปิดใช้จริง</li>
+    <li>สำรองไฟล์ <code>reports.db</code> เป็นระยะ (copy ไฟล์ไปเก็บที่อื่นด้วย) เผื่อเซิร์ฟเวอร์มีปัญหา</li>
+    <li>ถ้าข้อมูลอ่อนไหวมาก (เงินเดือน) ให้เลือกตัวเลือก A (เครือข่ายภายใน) เป็นอันดับแรกเสมอ</li>
+  </ul>
+
+  <div class="callout primary-source">
+    <p class="callout-title">แหล่งอ้างอิงหลัก</p>
+    <p>
+      <a href="https://render.com/docs/faq" target="_blank" rel="noopener">Render FAQ — ข้อมูล free tier และ persistent disk</a>
+      และเอกสารเริ่มต้นใช้งานของ
+      <a href="https://railway.app" target="_blank" rel="noopener">Railway</a>
+    </p>
+  </div>
+
+  <h2>สรุปเส้นทางทั้งหลักสูตร</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="แผนภาพสรุปเส้นทางการเรียนทั้ง 9 บท">
+      <style>
+        .fs { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1.5; }
+        .fl { font: 600 12px "IBM Plex Sans Thai", sans-serif; fill: var(--ink); }
+        .fs2 { font: 10px "IBM Plex Mono", monospace; fill: var(--muted); }
+      </style>
+      <rect class="fs" x="10" y="10" width="145" height="55" rx="6"></rect>
+      <text class="fl" x="82" y="32" text-anchor="middle">1. ภาพรวม</text>
+      <text class="fs2" x="82" y="48" text-anchor="middle">client/server/http</text>
+
+      <rect class="fs" x="165" y="10" width="145" height="55" rx="6"></rect>
+      <text class="fl" x="237" y="32" text-anchor="middle">2-4. Frontend</text>
+      <text class="fs2" x="237" y="48" text-anchor="middle">HTML / CSS / JS</text>
+
+      <rect class="fs" x="320" y="10" width="145" height="55" rx="6"></rect>
+      <text class="fl" x="392" y="32" text-anchor="middle">5-6. Backend</text>
+      <text class="fs2" x="392" y="48" text-anchor="middle">Node.js + Express</text>
+
+      <rect class="fs" x="475" y="10" width="145" height="55" rx="6"></rect>
+      <text class="fl" x="547" y="32" text-anchor="middle">7. Database</text>
+      <text class="fs2" x="547" y="48" text-anchor="middle">SQLite</text>
+
+      <rect class="fs" x="165" y="100" width="145" height="55" rx="6"></rect>
+      <text class="fl" x="237" y="122" text-anchor="middle">8. แอปสมบูรณ์</text>
+      <text class="fs2" x="237" y="138" text-anchor="middle">ระบบแจ้งเหตุ ESS</text>
+
+      <rect class="fs" x="320" y="100" width="145" height="55" rx="6"></rect>
+      <text class="fl" x="392" y="122" text-anchor="middle">9. Deploy</text>
+      <text class="fs2" x="392" y="138" text-anchor="middle">ใช้งานได้จริง</text>
+
+      <text class="fs2" x="320" y="200" text-anchor="middle">จาก "ไม่รู้อะไรเลยเรื่องเว็บ" ถึง "มีระบบใช้งานจริงที่ ESS"</text>
+    </svg>
+    <p class="diagram-caption">แผนภาพ 6 — เส้นทางทั้ง 9 บทของหลักสูตรนี้</p>
+  </div>
+
+  <p>
+    จากบทที่ 1 ที่ยังไม่รู้ว่า frontend/backend/database ต่างกันอย่างไร มาถึงตอนนี้มีระบบแจ้งเหตุความปลอดภัย
+    ที่ทำงานครบวงจรจริง เขียนเองทุกบรรทัด เข้าใจว่าทำไมแต่ละส่วนถึงต้องมีอยู่ — นี่คือรากฐานเดียวกับที่ใช้สร้าง
+    ระบบเงินเดือนหรือเครื่องมือ internal อื่นๆ ที่ ESS ได้เลย โครงสร้างจะคล้ายกันมาก
+    (ฟอร์ม → validate → backend → เก็บ database → แสดงผล)
+  </p>
+
+  <h2>ไปต่อจากนี้ได้อย่างไร</h2>
+  <ul>
+    <li><strong>ลองสร้างโปรเจกต์ที่ 2 เอง</strong> เช่น ระบบเช็กสลิปเงินเดือน — โครงสร้างจะคล้ายที่เรียนมาทั้งหมด</li>
+    <li><strong>เพิ่มระบบล็อกอิน</strong> (authentication) ก่อนเอาไปใช้กับข้อมูลจริง — เป็นหัวข้อที่ควรเรียนต่อโดยตรง</li>
+    <li><strong>เรียนรู้ framework อย่าง React</strong> เมื่อแอปเริ่มซับซ้อนขึ้นมาก (ตอนนี้ยังไม่จำเป็น)</li>
+    <li>กลับไปดูบทเรียนเก่าๆ ได้ตลอดเวลาที่ต้องการทบทวน — เก็บไฟล์ทั้งหมดไว้ดีๆ</li>
+  </ul>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ยินดีเรียนต่อได้เสมอ</p>
+    <p>
+      จบคอร์สนี้แล้วไม่ได้แปลว่าเรียนจบเรื่องเว็บทั้งหมด — ถ้าอยากลงลึกเรื่องไหนต่อ (authentication, React,
+      หรือกลับไปลองเรื่อง Cloudflare ที่พักไว้ตอนต้น) ถามได้เลยทุกเมื่อ
+    </p>
+  </div>
+
+  <div class="lesson-nav">
+    <span>← บทเรียนที่ 8: ประกอบร่างเป็นระบบสมบูรณ์</span>
+    <span>จบหลักสูตร 🎓</span>
+  </div>
+
+</body>
+</html>

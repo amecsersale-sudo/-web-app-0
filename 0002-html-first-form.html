@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เขียน HTML หน้าแรก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Shared stylesheet — "สอนทำ Web App ตั้งแต่ 0"
+   Design direction: technical drawing / spec-sheet.
+   Lessons read like an engineering documentation sheet —
+   title-block header, schematic diagrams, margin spec-notes —
+   fitting both the subject (how systems are built) and the
+   mission (internal tools for an engineering company).
+
+   Type system:
+     display — Bai Jamjuree   (Thai geometric tech face, used sparingly)
+     body    — IBM Plex Sans Thai (built for technical documentation)
+     mono    — IBM Plex Mono  (code, labels, drawing annotations)
+
+   Color system: teal-slate "blueprint" ground + amber-gold signal
+   accent (a nod to hazard/safety signage — the HSE thread in the
+   mission), not the warm-cream/terracotta default.
+   ============================================================ */
+
+:root {
+  --bg: #eef3f2;
+  --surface: #ffffff;
+  --ink: #14262a;
+  --muted: #52696c;
+  --border: #cddad8;
+  --border-strong: #a9bdba;
+  --accent: #c8790f;
+  --accent-ink: #7a4a09;
+  --accent-soft: #f4e3c6;
+  --link: #0d6e73;
+  --code-bg: #e2eae7;
+  --success: #2f7d4f;
+  --success-bg: #e2f0e6;
+  --danger: #b23a2e;
+  --danger-bg: #f8e4e0;
+  --shadow: rgba(20, 38, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a1c;
+    --surface: #16262a;
+    --ink: #e8f0ee;
+    --muted: #93a8a8;
+    --border: #274043;
+    --border-strong: #375457;
+    --accent: #e0a23c;
+    --accent-ink: #f6d9a3;
+    --accent-soft: #3a2c14;
+    --link: #56c9c3;
+    --code-bg: #172a2a;
+    --success: #6fbf8a;
+    --success-bg: #17301f;
+    --danger: #e08072;
+    --danger-bg: #3a1c17;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1a1c;
+  --surface: #16262a;
+  --ink: #e8f0ee;
+  --muted: #93a8a8;
+  --border: #274043;
+  --border-strong: #375457;
+  --accent: #e0a23c;
+  --accent-ink: #f6d9a3;
+  --accent-soft: #3a2c14;
+  --link: #56c9c3;
+  --code-bg: #172a2a;
+  --success: #6fbf8a;
+  --success-bg: #17301f;
+  --danger: #e08072;
+  --danger-bg: #3a1c17;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body.lesson {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", sans-serif;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 6rem;
+  font-size: 1.02rem;
+}
+
+/* ---- Title block (drawing-sheet header) ---- */
+.lesson-header {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 2.25rem;
+  position: relative;
+  background: var(--surface);
+}
+.lesson-header::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.lesson-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  color: var(--accent-ink);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.lesson-header h1 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.85rem;
+  margin: 0 0 0.6rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+h2 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-top: 2.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-strong);
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-top: 1.9rem;
+}
+
+p { margin: 1rem 0; max-width: 68ch; }
+
+a { color: var(--link); text-decoration-thickness: 1.5px; }
+a:hover { text-decoration: none; }
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--muted);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin: 1.6rem 0;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+.callout.primary-source { border-left-color: var(--link); }
+.callout.ask-teacher { border-left-color: var(--accent); font-size: 0.95rem; }
+
+.callout-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ---- Schematic diagram panel ---- */
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.diagram-caption {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* ---- Quiz widget ---- */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin: 1.75rem 0;
+}
+.quiz-item + .quiz-item,
+.fillblank-item + .fillblank-item {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+.quiz-q { font-weight: 600; margin-bottom: 0.9rem; }
+.quiz-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.quiz-choice:hover { border-color: var(--accent); }
+.quiz-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.quiz-choice.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+.quiz-choice.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.quiz-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2rem; font-family: "IBM Plex Mono", monospace; }
+
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--border-strong);
+  font-size: 0.85rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.progress-track {
+  display: flex;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+}
+.progress-dot {
+  width: 1.5rem; height: 0.3rem;
+  border-radius: 1px;
+  background: var(--border);
+}
+.progress-dot.done { background: var(--accent); }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.45rem 0; }
+
+.mission-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Rendered form demo (lesson 2+) ---- */
+.rendered-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.rendered-form h4 {
+  font-family: "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.3rem;
+}
+.form-row { display: flex; flex-direction: column; gap: 0.3rem; border: none; padding: 0; margin: 0; }
+.form-row label, .form-row legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  padding: 0;
+}
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row select,
+.form-row textarea {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.form-row textarea { resize: vertical; }
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  color: var(--ink);
+  margin-right: 0.75rem;
+  font-size: 0.92rem;
+}
+.demo-submit {
+  align-self: flex-start;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.demo-submit:hover { opacity: 0.9; }
+.demo-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+</style>
+</head>
+<body class="lesson">
+
+  <div class="lesson-header">
+    <p class="lesson-kicker">บทเรียนที่ 2 · ลงมือเขียนโค้ดจริง</p>
+    <h1>เขียน HTML หน้าแรก: ฟอร์มแจ้งเหตุความปลอดภัย</h1>
+    <p class="lesson-meta">ใช้เวลาทำประมาณ 15-20 นาที · ต้องมีเครื่องเขียนโค้ด (VS Code หรือ Notepad ก็ได้) และเบราว์เซอร์เปิดคู่กัน</p>
+    <div class="progress-track" title="ความคืบหน้าของหลักสูตร">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+    </div>
+  </div>
+
+  <span class="mission-tag">เป้าหมาย · สร้างระบบเงินเดือน/ความปลอดภัยใช้เองที่ ESS</span>
+
+  <p>
+    บทที่แล้วเราเห็นภาพรวมว่าเว็บแอปมี 3 ส่วน วันนี้จะลงมือสร้าง <strong>Frontend ส่วนแรก</strong> จริงๆ —
+    หน้าฟอร์มแจ้งเหตุความปลอดภัยที่พนักงานจะใช้กรอกจริง ยังไม่ต้องมี backend หรือ database
+    (กด "ส่ง" แล้วจะยังไม่มีอะไรเกิดขึ้น — นั่นเป็นเรื่องของบทถัดไป) เป้าหมายบทนี้คือ
+    เห็นหน้าฟอร์มที่เขียนเองทั้งหน้าให้ได้ก่อน
+  </p>
+
+  <h2>1. โครงหลักของทุกไฟล์ HTML</h2>
+  <p>
+    ไฟล์ HTML ทุกไฟล์เริ่มด้วยโครงเดียวกันเสมอ ลองสร้างไฟล์ชื่อ <code>report.html</code> แล้วพิมพ์ตามนี้:
+  </p>
+  <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="th"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;แจ้งเหตุความปลอดภัย&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;!-- เนื้อหาที่คนเห็นจะอยู่ตรงนี้ --&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  <ul>
+    <li><code>&lt;!DOCTYPE html&gt;</code> — บอกเบราว์เซอร์ว่านี่คือเอกสาร HTML5</li>
+    <li><code>&lt;head&gt;</code> — ข้อมูลเบื้องหลัง (ชื่อแท็บ, การเชื่อมไฟล์อื่น) ไม่แสดงบนหน้าจอ</li>
+    <li><code>&lt;body&gt;</code> — ทุกอย่างที่คนเห็นจริงอยู่ในนี้ทั้งหมด</li>
+  </ul>
+  <p>
+    เปิดไฟล์นี้ด้วยเบราว์เซอร์ (ดับเบิลคลิก หรือลากเข้าไปในเบราว์เซอร์) จะเห็นหน้าว่างเปล่า — ถูกต้องแล้ว
+    เพราะยังไม่มีอะไรใน <code>&lt;body&gt;</code>
+  </p>
+
+  <h2>2. องค์ประกอบของฟอร์ม</h2>
+  <p>
+    ฟอร์มทุกฟอร์มบนเว็บ ประกอบด้วย tag หลักๆ ไม่กี่ตัว:
+  </p>
+  <ul>
+    <li><code>&lt;form&gt;</code> — กล่องที่ครอบทุกฟิลด์ของฟอร์มไว้ด้วยกัน</li>
+    <li><code>&lt;label&gt;</code> — ป้ายกำกับบอกว่าฟิลด์นี้คือช่องกรอกอะไร</li>
+    <li><code>&lt;input&gt;</code> — ช่องกรอกข้อมูลบรรทัดเดียว มีหลาย <code>type</code> เช่น <code>text</code>, <code>date</code>, <code>radio</code></li>
+    <li><code>&lt;textarea&gt;</code> — ช่องกรอกข้อความยาวหลายบรรทัด</li>
+    <li><code>&lt;select&gt;</code> + <code>&lt;option&gt;</code> — เมนูดรอปดาวน์ให้เลือก</li>
+    <li><code>&lt;button&gt;</code> — ปุ่มกด (เช่น ปุ่มส่งฟอร์ม)</li>
+  </ul>
+
+  <h2>3. ประกอบร่างเป็นฟอร์มแจ้งเหตุจริง</h2>
+  <p>ค่อยๆ เพิ่มทีละส่วนใน <code>&lt;body&gt;</code> ตามนี้:</p>
+
+  <h3>3.1 หัวข้อและชื่อผู้แจ้ง</h3>
+  <pre><code>&lt;h1&gt;แบบฟอร์มแจ้งเหตุความปลอดภัย&lt;/h1&gt;
+
+&lt;form&gt;
+  &lt;label for="reporter-name"&gt;ชื่อผู้แจ้ง&lt;/label&gt;
+  &lt;input type="text" id="reporter-name" name="reporterName" required&gt;
+&lt;/form&gt;</code></pre>
+  <p>
+    สังเกต <code>for="reporter-name"</code> กับ <code>id="reporter-name"</code> ต้องตรงกัน —
+    นี่คือวิธีบอกเบราว์เซอร์ว่า label นี้เป็นของ input ตัวไหน (กดที่ label แล้ว cursor จะกระโดดไปที่ช่องกรอกเลย)
+    ส่วน <code>required</code> คือสั่งให้เบราว์เซอร์บังคับกรอกก่อนส่งได้
+  </p>
+
+  <h3>3.2 วันที่และสถานที่เกิดเหตุ</h3>
+  <pre><code>&lt;label for="incident-date"&gt;วันที่เกิดเหตุ&lt;/label&gt;
+&lt;input type="date" id="incident-date" name="incidentDate" required&gt;
+
+&lt;label for="location"&gt;สถานที่เกิดเหตุ&lt;/label&gt;
+&lt;input type="text" id="location" name="location" placeholder="เช่น อาคาร A ชั้น 2"&gt;</code></pre>
+  <p><code>placeholder</code> คือข้อความจางๆ ในช่องว่าง ใช้เป็นตัวอย่าง ไม่ใช่ค่าจริงที่จะถูกส่งไป</p>
+
+  <h3>3.3 ประเภทเหตุ (dropdown) และระดับความรุนแรง (radio)</h3>
+  <pre><code>&lt;label for="incident-type"&gt;ประเภทเหตุ&lt;/label&gt;
+&lt;select id="incident-type" name="incidentType"&gt;
+  &lt;option value="near-miss"&gt;เกือบเกิดอุบัติเหตุ&lt;/option&gt;
+  &lt;option value="injury"&gt;มีผู้บาดเจ็บ&lt;/option&gt;
+  &lt;option value="equipment"&gt;อุปกรณ์เสียหาย&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;fieldset&gt;
+  &lt;legend&gt;ระดับความรุนแรง&lt;/legend&gt;
+  &lt;label&gt;&lt;input type="radio" name="severity" value="low"&gt; ต่ำ&lt;/label&gt;
+  &lt;label&gt;&lt;input type="radio" name="severity" value="medium"&gt; ปานกลาง&lt;/label&gt;
+  &lt;label&gt;&lt;input type="radio" name="severity" value="high"&gt; สูง&lt;/label&gt;
+&lt;/fieldset&gt;</code></pre>
+  <p>
+    <code>&lt;fieldset&gt;</code>/<code>&lt;legend&gt;</code> ใช้จัดกลุ่ม radio ที่เกี่ยวข้องกันให้เห็นเป็นชุดเดียว —
+    สังเกตว่า radio ทั้งสามตัวใช้ <code>name="severity"</code> เหมือนกัน นั่นคือสิ่งที่ทำให้เลือกได้ทีละตัว
+  </p>
+
+  <h3>3.4 รายละเอียดเหตุการณ์และปุ่มส่ง</h3>
+  <pre><code>&lt;label for="details"&gt;รายละเอียดเหตุการณ์&lt;/label&gt;
+&lt;textarea id="details" name="details" rows="4"&gt;&lt;/textarea&gt;
+
+&lt;button type="submit"&gt;ส่งรายงาน&lt;/button&gt;</code></pre>
+
+  <div class="callout ask-teacher">
+    <p class="callout-title">ลองทำเอง ก่อนดูของจริง</p>
+    <p>
+      ลองต่อโค้ดทั้ง 4 ส่วนข้างบนเข้าด้วยกันในไฟล์ <code>report.html</code> ของตัวเองก่อน แล้วเปิดดูผลลัพธ์ในเบราว์เซอร์
+      ถ้าติดตรงไหน หรืออยากรู้ว่าทำไม HTML เพียวๆ ถึงหน้าตาดูรกๆ ไม่เหมือนเว็บจริง — ถามได้เลย
+      (คำตอบสั้นๆ คือ: ยังไม่มี CSS ตกแต่ง ซึ่งเป็นบทถัดไป)
+    </p>
+  </div>
+
+  <h2>ผลลัพธ์ที่ควรได้ (ลองเทียบกับของคุณ)</h2>
+  <div class="diagram">
+    <form class="rendered-form" onsubmit="return false;">
+      <h4>แบบฟอร์มแจ้งเหตุความปลอดภัย</h4>
+
+      <div class="form-row">
+        <label for="demo-name">ชื่อผู้แจ้ง</label>
+        <input type="text" id="demo-name" required>
+      </div>
+
+      <div class="form-row">
+        <label for="demo-date">วันที่เกิดเหตุ</label>
+        <input type="date" id="demo-date" required>
+      </div>
+
+      <div class="form-row">
+        <label for="demo-location">สถานที่เกิดเหตุ</label>
+        <input type="text" id="demo-location" placeholder="เช่น อาคาร A ชั้น 2">
+      </div>
+
+      <div class="form-row">
+        <label for="demo-type">ประเภทเหตุ</label>
+        <select id="demo-type">
+          <option>เกือบเกิดอุบัติเหตุ</option>
+          <option>มีผู้บาดเจ็บ</option>
+          <option>อุปกรณ์เสียหาย</option>
+        </select>
+      </div>
+
+      <fieldset class="form-row">
+        <legend>ระดับความรุนแรง</legend>
+        <label class="radio-label"><input type="radio" name="demo-severity"> ต่ำ</label>
+        <label class="radio-label"><input type="radio" name="demo-severity"> ปานกลาง</label>
+        <label class="radio-label"><input type="radio" name="demo-severity"> สูง</label>
+      </fieldset>
+
+      <div class="form-row">
+        <label for="demo-details">รายละเอียดเหตุการณ์</label>
+        <textarea id="demo-details" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="demo-submit">ส่งรายงาน</button>
+      <p class="demo-note">(ปุ่มนี้กดได้แต่ยังไม่ส่งไปไหน — ต้องมี backend ก่อน ซึ่งเป็นบทถัดไป)</p>
+    </form>
+    <p class="diagram-caption">ตัวอย่างที่ 1 — ฟอร์มเดียวกัน แต่ยังไม่ใส่ CSS ตกแต่ง (หน้าตาแบบ HTML ล้วนๆ)</p>
+  </div>
+
+  <div class="callout primary-source">
+    <p class="callout-title">แหล่งอ้างอิงหลัก</p>
+    <p>
+      MDN Web Docs มีคู่มือฟอร์มแบบละเอียดครบทุก input type:
+      <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Your_first_form" target="_blank" rel="noopener">
+        Your first form — MDN
+      </a>
+      แนะนำให้อ่านหัวข้อ "Basic form structure" ก่อน แล้วค่อยไล่ดู input type อื่นๆ เพิ่มทีหลังตามที่ต้องใช้
+    </p>
+  </div>
+
+  <h2>ทดสอบความเข้าใจ</h2>
+  <div class="quiz" id="fillquiz">
+
+    <div class="fillblank-item" data-answers="label">
+      <p class="quiz-q">1. tag ที่ใช้เขียนป้ายกำกับให้ input (กดแล้ว cursor กระโดดไปที่ช่องกรอก) ชื่อว่าอะไร?</p>
+      <div class="fillblank">
+        <code>&lt;____ for="reporter-name"&gt;ชื่อผู้แจ้ง&lt;/____&gt;</code><br><br>
+        <input type="text" placeholder="พิมพ์ชื่อ tag">
+        <button type="button">ตรวจคำตอบ</button>
+        <span class="fillblank-feedback"></span>
+      </div>
+    </div>
+
+    <div class="fillblank-item" data-answers="textarea">
+      <p class="quiz-q">2. ช่องกรอกข้อความยาวหลายบรรทัด (เช่น รายละเอียดเหตุการณ์) ใช้ tag ชื่อว่าอะไร?</p>
+      <div class="fillblank">
+        <code>&lt;____ id="details" rows="4"&gt;&lt;/____&gt;</code><br><br>
+        <input type="text" placeholder="พิมพ์ชื่อ tag">
+        <button type="button">ตรวจคำตอบ</button>
+        <span class="fillblank-feedback"></span>
+      </div>
+    </div>
+
+    <div class="fillblank-item" data-answers="form">
+      <p class="quiz-q">3. tag ที่ครอบฟิลด์ทั้งหมดของฟอร์มไว้ด้วยกันในหนึ่งเดียว ชื่อว่าอะไร?</p>
+      <div class="fillblank">
+        <code>&lt;____&gt; ... ฟิลด์ทั้งหมด ... &lt;/____&gt;</code><br><br>
+        <input type="text" placeholder="พิมพ์ชื่อ tag">
+        <button type="button">ตรวจคำตอบ</button>
+        <span class="fillblank-feedback"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>บทต่อไปจะเรียนอะไร</h2>
+  <p>
+    ตอนนี้มีฟอร์มที่ใช้งานได้แล้ว (แม้จะยังหน้าตาดิบๆ) บทเรียนที่ 3 จะเรียน <strong>CSS</strong>
+    เพื่อจัดหน้าตาฟอร์มนี้ให้ดูเป็นมืออาชีพขึ้น เช่น จัดระยะห่าง เปลี่ยนสี ทำให้ input ดูสวยงามใช้ง่าย
+    ก่อนที่บทที่ 4-5 จะไปต่อกับ backend จริงให้ปุ่ม "ส่งรายงาน" ทำงานได้จริง
+  </p>
+
+  <div class="lesson-nav">
+    <span><a href="https://claude.ai/code/artifact/395309bf-c9b4-4bc5-bdaa-cb80126d3004">← บทเรียนที่ 1: Web App ทำงานอย่างไร</a></span>
+    <span>บทเรียนที่ 3: ตกแต่งด้วย CSS (เร็วๆ นี้) →</span>
+  </div>
+
+  <script>
+    document.querySelectorAll('.fillblank-item').forEach(function (item) {
+      var accepted = item.dataset.answers.split(',').map(function (s) { return s.trim().toLowerCase(); });
+      var input = item.querySelector('.fillblank input[type="text"]');
+      var btn = item.querySelector('.fillblank button');
+      var feedback = item.querySelector('.fillblank-feedback');
+      btn.addEventListener('click', function () {
+        var val = input.value.trim().toLowerCase();
+        if (accepted.indexOf(val) !== -1) {
+          input.classList.remove('incorrect');
+          input.classList.add('correct');
+          feedback.textContent = '[ถูกต้อง]';
+        } else {
+          input.classList.remove('correct');
+          input.classList.add('incorrect');
+          feedback.textContent = '[ยังไม่ถูก] ลองอีกครั้ง';
+        }
+      });
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); btn.click(); }
+      });
+    });
+  </script>
+
+</body>
+</html>
